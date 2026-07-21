@@ -33,4 +33,16 @@ class RegisterView(generics.CreateAPIView):
             status=201,
         )
 
-# Create your views here.
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from .serializers import CustomTokenObtainPairSerializer
+
+class LoginView(TokenObtainPairView):
+    """
+    POST /api/v1/auth/login/
+
+    Accepts username and password, returns access token, refresh token,
+    and basic user info if credentials are valid.
+    """
+
+    serializer_class = CustomTokenObtainPairSerializer

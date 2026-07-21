@@ -58,3 +58,27 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
         )
         return user
+    
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Extends the default JWT login serializer to also return basic
+    user info (id, username, email) alongside the access/refresh tokens,
+    so the frontend doesn't need a separate API call right after login.
+    """
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data["user"] = {
+            "id": str(self.user.id),
+            "username": self.user.username,
+            "email": self.user.email,
+        }
+        return data
