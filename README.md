@@ -13,8 +13,8 @@ with friends and the community.
 - Frontend: Next.js, TypeScript, Tailwind CSS
 - Backend: Django, Django REST Framework
 - Database: PostgreSQL
-- Cache / Queue: Redis, Celery
-- AI: Provider-independent service layer
+- Cache / Queue: Redis, Celery (upcoming)
+- AI: Provider-independent service layer (upcoming)
 
 ## Project Status
 
@@ -23,11 +23,31 @@ with friends and the community.
 ## Completed Phases
 
 - [x] Phase 0: Planning and Architecture
-- [ ] Phase 1: Base Project Setup (in progress)
+- [x] Phase 1: Base Project Setup
+- [ ] Phase 2: Authentication and Profiles (next)
 
-## Setup Instructions
+## Local Setup
 
-Setup instructions will be added as each phase is completed.
+### Frontend
+\`\`\`bash
+cd frontend
+npm install
+npm run dev
+\`\`\`
+Visit http://localhost:3000
+
+### Backend
+\`\`\`bash
+cd backend
+python -m venv venv
+venv\\Scripts\\activate   # Windows
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+\`\`\`
+Visit http://127.0.0.1:8000
+
+Copy `.env.example` to `.env` and fill in your local PostgreSQL credentials before running the backend.
 
 ## License
 
