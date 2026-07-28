@@ -99,6 +99,8 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
