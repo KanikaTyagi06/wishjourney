@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'accounts',
+    'user_profiles',
 ]
 
 MIDDLEWARE = [
@@ -164,3 +165,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
 }
+
+# Media files (user-uploaded content like profile pictures)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
