@@ -24,7 +24,8 @@ with friends and the community.
 
 - [x] Phase 0: Planning and Architecture
 - [x] Phase 1: Base Project Setup
-- [ ] Phase 2: Authentication and Profiles (next)
+- [x] Phase 2: Authentication and Profiles
+- [ ] Phase 3: Multilingual Structure (next)
 
 ## Local Setup
 
