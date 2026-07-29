@@ -54,6 +54,39 @@ class UserProfile(models.Model):
         choices=BudgetPreference.choices,
         blank=True,
     )
+    interests = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of interest tags selected during onboarding, e.g. ['travel', 'fitness'].",
+    )
+    wish_type_preference = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of preferred wish categories, e.g. ['travel', 'education'].",
+    )
+
+    class GroupPreference(models.TextChoices):
+        SOLO = "solo", "Solo"
+        COUPLE = "couple", "Couple"
+        FRIENDS = "friends", "Friends"
+        FAMILY = "family", "Family"
+
+    group_preference = models.CharField(
+        max_length=10,
+        choices=GroupPreference.choices,
+        blank=True,
+    )
+
+    class ExperienceScope(models.TextChoices):
+        LOCAL = "local", "Local"
+        NATIONAL = "national", "National"
+        INTERNATIONAL = "international", "International"
+
+    experience_scope_preference = models.CharField(
+        max_length=15,
+        choices=ExperienceScope.choices,
+        blank=True,
+    )
     is_public = models.BooleanField(
         default=True,
         help_text="Whether this profile is visible to other users.",
@@ -73,4 +106,3 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"Profile of {self.user.email}"
 
-# Create your models here.

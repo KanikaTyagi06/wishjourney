@@ -21,3 +21,22 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
         return profile
+
+from .serializers import OnboardingSerializer
+
+
+class OnboardingView(generics.UpdateAPIView):
+    """
+    PATCH /api/v1/profiles/onboarding/
+
+    Accepts onboarding preferences (or an empty payload to skip) and
+    marks the user's onboarding as completed. Always operates on the
+    logged-in user's own profile.
+    """
+
+    serializer_class = OnboardingSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        profile, _ = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile
