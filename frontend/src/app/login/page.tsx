@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
+const GOOGLE_CLIENT_ID =
+  "789037311239-euq7lde21bkmnlnbmjp08kimckrrg9vk.apps.googleusercontent.com";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,6 +19,41 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+
+  async function handleGoogleResponse(response: any) {
+    setError("");
+    try {
+      const res = await api.post("/auth/google/", {
+        id_token: response.credential,
+      });
+      localStorage.setItem("access_token", res.data.access);
+      localStorage.setItem("refresh_token", res.data.refresh);
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError("Could not sign in with Google. Please try again.");
+    }
+  }
+
+  useEffect(() => {
+    const tryInit = () => {
+      if (window.google && googleButtonRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse,
+        });
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: "outline",
+          size: "large",
+          width: 320,
+          text: "continue_with",
+        });
+      } else {
+        setTimeout(tryInit, 300);
+      }
+    };
+    tryInit();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,9 +136,7 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-border-soft" />
         </div>
 
-        <button className="w-full border border-border-soft rounded-lg py-2.5 text-sm font-medium">
-          Continue with Google
-        </button>
+        <div ref={googleButtonRef} className="flex justify-center" />
 
         <p className="text-sm text-text-secondary mt-6">
           New here?{" "}
