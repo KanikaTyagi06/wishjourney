@@ -49,13 +49,15 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """
         Create the user using create_user() so that the password
-        is properly hashed (never stored as plain text).
+        is properly hashed (never stored as plain text). The account
+        starts inactive until the user verifies their email.
         """
         validated_data.pop("password_confirm")
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"],
+            is_active=False,
         )
         return user
     
@@ -139,3 +141,31 @@ class GoogleAuthSerializer(serializers.Serializer):
             created = True
 
         return user, created
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    """
+    Accepts an email address and triggers a password reset email if
+    an account with that email exists. Always succeeds from the
+    client's perspective, regardless of whether the email was found,
+    to avoid leaking which emails are registered.
+    """
+
+    email = serializers.EmailField()
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """
+    Accepts a reset token and a new password, and updates the user's
+    password if the token is valid and not expired.
+    """
+
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, validators=[validate_password])
+    new_password_confirm = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password_confirm": "Passwords do not match."}
+            )
+        return attrs

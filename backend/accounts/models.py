@@ -32,6 +32,27 @@ class User(AbstractUser):
     # configure login to use email instead of username.
     REQUIRED_FIELDS = ["email"]
 
+    is_email_verified = models.BooleanField(
+        default=False,
+        help_text="Whether the user has verified their email address.",
+    )
+    email_verification_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        help_text="Unique token sent in the verification email link.",
+    )
+
+    password_reset_token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        help_text="Token used for password reset links. Regenerated each time a reset is requested.",
+    )
+    password_reset_requested_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the last password reset was requested, used to expire old links.",
+    )
+
     class Meta:
         db_table = "accounts_user"
         verbose_name = "User"
