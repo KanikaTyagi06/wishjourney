@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { api } from "@/lib/api";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+  const t = useTranslations("register");
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,15 +32,7 @@ export default function RegisterPage() {
         password_confirm: passwordConfirm,
       });
 
-      const loginResponse = await api.post("/auth/login/", {
-        username: email,
-        password,
-      });
-
-      localStorage.setItem("access_token", loginResponse.data.access);
-      localStorage.setItem("refresh_token", loginResponse.data.refresh);
-
-      router.push("/dashboard");
+      router.push(`/${locale}/login`);
     } catch (err: any) {
       const data = err.response?.data;
       const firstError =
@@ -51,19 +49,22 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background px-4">
+    <main className="min-h-screen flex items-center justify-center bg-background px-4 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-sm text-center">
         <div className="w-14 h-14 rounded-2xl bg-brand-amber flex items-center justify-center mx-auto mb-5">
           <span className="text-2xl">🌅</span>
         </div>
-        <h1 className="text-xl font-medium mb-1">Start your journey</h1>
-        <p className="text-sm text-text-secondary mb-7">
-          Create an account to plan your first wish.
-        </p>
+        <h1 className="text-xl font-medium mb-1">{t("title")}</h1>
+        <p className="text-sm text-text-secondary mb-7">{t("subtitle")}</p>
 
         <form className="space-y-3 text-left" onSubmit={handleSubmit}>
           <div>
-            <label className="text-xs text-text-secondary mb-1 block">Username</label>
+            <label className="text-xs text-text-secondary mb-1 block">
+              {t("username")}
+            </label>
             <input
               type="text"
               placeholder="yourname"
@@ -74,7 +75,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-text-secondary mb-1 block">Email</label>
+            <label className="text-xs text-text-secondary mb-1 block">
+              {t("email")}
+            </label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -85,7 +88,9 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-text-secondary mb-1 block">Password</label>
+            <label className="text-xs text-text-secondary mb-1 block">
+              {t("password")}
+            </label>
             <input
               type="password"
               placeholder="At least 8 characters"
@@ -97,7 +102,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <label className="text-xs text-text-secondary mb-1 block">
-              Confirm password
+              {t("confirmPassword")}
             </label>
             <input
               type="password"
@@ -120,14 +125,14 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-brand-rose text-brand-peach rounded-lg py-2.5 text-sm font-medium mt-2 disabled:opacity-60"
           >
-            {loading ? "Creating account..." : "Create account"}
+            {loading ? t("creatingAccount") : t("createAccount")}
           </button>
         </form>
 
         <p className="text-sm text-text-secondary mt-6">
-          Already have an account?{" "}
-          <a href="/login" className="text-brand-rose font-medium">
-            Log in
+          {t("alreadyHaveAccount")}{" "}
+          <a href={`/${locale}/login`} className="text-brand-rose font-medium">
+            {t("logIn")}
           </a>
         </p>
       </div>

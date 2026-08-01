@@ -170,3 +170,10 @@ REST_FRAMEWORK = {
 # Media files (user-uploaded content like profile pictures)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Email settings — for development, emails are printed to the console
+# instead of actually being sent. Replace with real SMTP settings
+# (e.g. Gmail, SendGrid) before going to production.
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@wishjourney.com"
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
