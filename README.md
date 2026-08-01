@@ -25,7 +25,8 @@ with friends and the community.
 - [x] Phase 0: Planning and Architecture
 - [x] Phase 1: Base Project Setup
 - [x] Phase 2: Authentication and Profiles
-- [ ] Phase 3: Multilingual Structure (next)
+- [x] Phase 3: Multilingual Structure (English, Hindi — more languages planned)
+- [ ] Phase 4: Categories and Bucket List (next)
 
 ## Local Setup
 
