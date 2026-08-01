@@ -1,0 +1,44 @@
+{
+  "common": {
+    "appName": "WishJourney",
+    "tagline": "Dream it, plan it — every wish deserves its journey."
+  },
+  "login": {
+    "title": "WishJourney",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "logIn": "Log in",
+    "loggingIn": "Logging in...",
+    "orContinueWith": "or continue with",
+    "newHere": "New here?",
+    "createAccount": "Create an account"
+  },
+
+
+  "register": {
+    "title": "Start your journey",
+    "subtitle": "Create an account to plan your first wish.",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "createAccount": "Create account",
+    "creatingAccount": "Creating account...",
+    "alreadyHaveAccount": "Already have an account?",
+    "logIn": "Log in"
+  },
+
+  
+  "dashboard": {
+    "goodMorning": "Good morning",
+    "nextDreamAwaits": "Your next dream awaits",
+    "planNextWish": "Plan my next wish",
+    "yourProgress": "Your progress",
+    "bucketList": "Bucket list",
+    "inProgress": "In progress",
+    "completed": "Completed",
+    "recommendedForYou": "Recommended for you",
+    "logOut": "Log out"
+  }
+}

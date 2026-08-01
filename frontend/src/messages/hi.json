@@ -1,0 +1,43 @@
+{
+  "common": {
+    "appName": "WishJourney",
+    "tagline": "सपना देखें, योजना बनाएं — हर इच्छा की अपनी यात्रा है।"
+  },
+  "login": {
+    "title": "WishJourney",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "logIn": "लॉग इन करें",
+    "loggingIn": "लॉग इन हो रहा है...",
+    "orContinueWith": "या इसके साथ जारी रखें",
+    "newHere": "यहाँ नए हैं?",
+    "createAccount": "खाता बनाएं"
+  },
+
+  "register": {
+    "title": "अपनी यात्रा शुरू करें",
+    "subtitle": "अपनी पहली इच्छा की योजना बनाने के लिए खाता बनाएं।",
+    "username": "उपयोगकर्ता नाम",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्ड की पुष्टि करें",
+    "createAccount": "खाता बनाएं",
+    "creatingAccount": "खाता बनाया जा रहा है...",
+    "alreadyHaveAccount": "पहले से खाता है?",
+    "logIn": "लॉग इन करें"
+  },
+
+  
+  "dashboard": {
+    "goodMorning": "सुप्रभात",
+    "nextDreamAwaits": "आपका अगला सपना आपका इंतज़ार कर रहा है",
+    "planNextWish": "मेरी अगली इच्छा की योजना बनाएं",
+    "yourProgress": "आपकी प्रगति",
+    "bucketList": "बकेट लिस्ट",
+    "inProgress": "प्रगति में",
+    "completed": "पूर्ण",
+    "recommendedForYou": "आपके लिए अनुशंसित",
+    "logOut": "लॉग आउट"
+  }
+}

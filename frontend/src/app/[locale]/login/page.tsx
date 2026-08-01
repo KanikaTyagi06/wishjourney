@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { api } from "@/lib/api";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 declare global {
   interface Window {
@@ -15,6 +17,11 @@ const GOOGLE_CLIENT_ID =
 
 export default function LoginPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
+  const t = useTranslations("login");
+  const tCommon = useTranslations("common");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -29,7 +36,7 @@ export default function LoginPage() {
       });
       localStorage.setItem("access_token", res.data.access);
       localStorage.setItem("refresh_token", res.data.refresh);
-      router.push("/dashboard");
+      router.push(`/${locale}/dashboard`);
     } catch (err: any) {
       setError("Could not sign in with Google. Please try again.");
     }
@@ -69,7 +76,7 @@ export default function LoginPage() {
       localStorage.setItem("access_token", response.data.access);
       localStorage.setItem("refresh_token", response.data.refresh);
 
-      router.push("/dashboard");
+      router.push(`/${locale}/dashboard`);
     } catch (err: any) {
       setError(
         err.response?.data?.detail ||
@@ -81,19 +88,24 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background px-4">
+    <main className="min-h-screen flex items-center justify-center bg-background px-4 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-sm text-center">
         <div className="w-14 h-14 rounded-2xl bg-brand-amber flex items-center justify-center mx-auto mb-5">
           <span className="text-2xl">🌅</span>
         </div>
-        <h1 className="text-xl font-medium mb-1">WishJourney</h1>
+        <h1 className="text-xl font-medium mb-1">{t("title")}</h1>
         <p className="text-sm text-text-secondary mb-7">
-          Turn your dreams into a plan, one wish at a time.
+          {tCommon("tagline")}
         </p>
 
         <form className="space-y-3 text-left" onSubmit={handleSubmit}>
           <div>
-            <label className="text-xs text-text-secondary mb-1 block">Email</label>
+            <label className="text-xs text-text-secondary mb-1 block">
+              {t("email")}
+            </label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -104,7 +116,9 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-text-secondary mb-1 block">Password</label>
+            <label className="text-xs text-text-secondary mb-1 block">
+              {t("password")}
+            </label>
             <input
               type="password"
               placeholder="Password"
@@ -116,8 +130,8 @@ export default function LoginPage() {
           </div>
 
           <div className="text-right">
-            <a href="/forgot-password" className="text-xs text-brand-rose">
-              Forgot password?
+            <a href={`/${locale}/forgot-password`} className="text-xs text-brand-rose">
+              {t("forgotPassword")}
             </a>
           </div>
 
@@ -132,22 +146,22 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-brand-rose text-brand-peach rounded-lg py-2.5 text-sm font-medium mt-2 disabled:opacity-60"
           >
-            {loading ? "Logging in..." : "Log in"}
+            {loading ? t("loggingIn") : t("logIn")}
           </button>
         </form>
 
         <div className="flex items-center gap-3 my-5">
           <div className="flex-1 h-px bg-border-soft" />
-          <span className="text-xs text-text-muted">or continue with</span>
+          <span className="text-xs text-text-muted">{t("orContinueWith")}</span>
           <div className="flex-1 h-px bg-border-soft" />
         </div>
 
         <div ref={googleButtonRef} className="flex justify-center" />
 
         <p className="text-sm text-text-secondary mt-6">
-          New here?{" "}
-          <a href="/register" className="text-brand-rose font-medium">
-            Create an account
+          {t("newHere")}{" "}
+          <a href={`/${locale}/register`} className="text-brand-rose font-medium">
+            {t("createAccount")}
           </a>
         </p>
       </div>
