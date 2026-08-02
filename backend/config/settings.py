@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'categories',
     'wish_templates',
     'django_filters',
+    'wishes',
 ]
 
 MIDDLEWARE = [

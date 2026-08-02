@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/v1/profiles/', include('user_profiles.urls')),
     path('api/v1/categories/', include('categories.urls')),
     path('api/v1/wish-templates/', include('wish_templates.urls')),
+    path('api/v1/wishes/', include('wishes.urls')),
 ]
 
 if settings.DEBUG:
