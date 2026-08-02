@@ -26,7 +26,8 @@ with friends and the community.
 - [x] Phase 1: Base Project Setup
 - [x] Phase 2: Authentication and Profiles
 - [x] Phase 3: Multilingual Structure (English, Hindi — more languages planned)
-- [ ] Phase 4: Categories and Bucket List (next)
+- [x] Phase 4 (Backend): Categories, Wish Templates, and User Bucket List CRUD
+- [ ] Phase 4 (Frontend): Bucket List UI (next)
 
 ## Local Setup
 
