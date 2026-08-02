@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'accounts',
     'user_profiles',
     'categories',
+    'wish_templates',
+    'django_filters',
     'wishes',
 ]
 
