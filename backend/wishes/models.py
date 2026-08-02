@@ -56,14 +56,8 @@ class UserWish(models.Model):
         choices=Status.choices,
         default=Status.IDEA,
     )
-    priority = models.BooleanField(
-        default=False,
-        help_text="Whether the user has marked this wish as a priority.",
-    )
-    is_public = models.BooleanField(
-        default=False,
-        help_text="Whether this wish is visible to other users.",
-    )
+    priority = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
 
     estimated_budget = models.PositiveIntegerField(null=True, blank=True)
     actual_cost = models.PositiveIntegerField(null=True, blank=True)
@@ -78,6 +72,8 @@ class UserWish(models.Model):
     class Meta:
         db_table = "wishes_userwish"
         ordering = ["-created_at"]
+        verbose_name = "User Wish"
+        verbose_name_plural = "User Wishes"
 
     def __str__(self):
         return f"{self.title} ({self.user.username})"
@@ -86,8 +82,7 @@ class UserWish(models.Model):
 class WishStatusHistory(models.Model):
     """
     Tracks every status change a wish goes through, so users can see
-    their journey (e.g. Idea -> Planning -> In Progress -> Completed)
-    and so we have an audit trail.
+    their journey and so we have an audit trail.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -103,6 +98,8 @@ class WishStatusHistory(models.Model):
     class Meta:
         db_table = "wishes_wishstatushistory"
         ordering = ["-changed_at"]
+        verbose_name = "Wish Status History"
+        verbose_name_plural = "Wish Status Histories"
 
     def __str__(self):
         return f"{self.wish.title}: {self.previous_status} -> {self.new_status}"
