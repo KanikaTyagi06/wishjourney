@@ -8,6 +8,7 @@ urlpatterns = [
     path('api/v1/auth/', include('accounts.urls')),
     path('api/v1/profiles/', include('user_profiles.urls')),
     path('api/v1/categories/', include('categories.urls')),
+    path('api/v1/wish-templates/', include('wish_templates.urls')),
 ]
 
 if settings.DEBUG:
