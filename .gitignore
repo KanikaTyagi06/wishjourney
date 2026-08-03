@@ -45,3 +45,5 @@ logs/
 
 # Docker
 docker-compose.override.yml
+
+project_combined.txt
