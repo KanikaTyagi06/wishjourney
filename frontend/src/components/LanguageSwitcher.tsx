@@ -20,22 +20,39 @@ export default function LanguageSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-1.5 border border-border-soft rounded-lg px-2 py-1.5">
+    <div
+      className="flex items-center gap-1.5 rounded-full px-3 py-1.5 backdrop-blur-sm"
+      style={{ backgroundColor: "var(--nebula-blue-soft)" }}
+    >
       <span className="text-sm" aria-hidden="true">
         🌐
       </span>
-      <select
-        value={currentLocale}
-        onChange={(e) => handleChange(e.target.value)}
-        aria-label="Select language"
-        className="text-xs bg-background outline-none cursor-pointer"
-      >
-        {languages.map((lang) => (
-          <option key={lang.code} value={lang.code}>
-            {lang.label}
-          </option>
-        ))}
-      </select>
+      <div className="relative flex items-center">
+        <select
+          value={currentLocale}
+          onChange={(e) => handleChange(e.target.value)}
+          aria-label="Select language"
+          className="text-xs font-semibold bg-transparent outline-none cursor-pointer appearance-none pr-4"
+          style={{ color: "var(--nebula-magenta)" }}
+        >
+          {languages.map((lang) => (
+            <option
+              key={lang.code}
+              value={lang.code}
+              style={{ color: "#1A0E24" }}
+            >
+              {lang.label}
+            </option>
+          ))}
+        </select>
+        <span
+          className="pointer-events-none absolute right-0 text-[10px]"
+          style={{ color: "var(--nebula-magenta)" }}
+          aria-hidden="true"
+        >
+          ▾
+        </span>
+      </div>
     </div>
   );
 }

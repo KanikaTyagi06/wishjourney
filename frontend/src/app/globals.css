@@ -158,9 +158,11 @@
 body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   background:
-    radial-gradient(1100px 700px at 15% -10%, #2A1450 0%, transparent 55%),
-    radial-gradient(900px 700px at 100% 10%, #401A3C 0%, transparent 55%),
+    radial-gradient(140% 90% at 15% 0%, rgba(224, 64, 158, 0.35) 0%, transparent 55%),
+    radial-gradient(120% 80% at 100% 20%, rgba(255, 122, 69, 0.28) 0%, transparent 50%),
+    radial-gradient(120% 90% at 50% 110%, rgba(82, 113, 255, 0.32) 0%, transparent 55%),
     var(--nebula-bg);
+  background-attachment: fixed;
   min-height: 100vh;
 }
 
