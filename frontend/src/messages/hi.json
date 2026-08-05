@@ -50,6 +50,18 @@
     "backToLogin": "लॉगिन पर वापस जाएं"
   },
 
+  "resetPassword": {
+    "title": "नया पासवर्ड सेट करें",
+    "subtitle": "अपने खाते के लिए एक मजबूत पासवर्ड चुनें।",
+    "newPassword": "नया पासवर्ड",
+    "confirmNewPassword": "नए पासवर्ड की पुष्टि करें",
+    "resetPasswordButton": "पासवर्ड रीसेट करें",
+    "resetting": "रीसेट हो रहा है...",
+    "genericError": "पासवर्ड रीसेट नहीं हो सका।",
+    "noTokenTitle": "लिंक मान्य नहीं है",
+    "noTokenMessage": "कोई रीसेट टोकन नहीं मिला। कृपया अपने ईमेल से लिंक का उपयोग करें।"
+  },
+
   
   "dashboard": {
     "goodMorning": "सुप्रभात",

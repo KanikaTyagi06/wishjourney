@@ -51,6 +51,18 @@
     "backToLogin": "Back to login"
   },
 
+  "resetPassword": {
+    "title": "Set a new password",
+    "subtitle": "Choose a strong password for your account.",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "resetPasswordButton": "Reset password",
+    "resetting": "Resetting...",
+    "genericError": "Could not reset password.",
+    "noTokenTitle": "Link not valid",
+    "noTokenMessage": "No reset token found. Please use the link from your email."
+  },
+
   
   "dashboard": {
     "goodMorning": "Good morning",
