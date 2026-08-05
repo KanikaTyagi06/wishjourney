@@ -16,6 +16,17 @@
     "createAccount": "Create an account"
   },
 
+  "verifyEmail": {
+    "verifyingTitle": "Verifying your email",
+    "verifyingSubtitle": "Just a moment while we confirm it's really you.",
+    "successTitle": "Email verified!",
+    "goToLogin": "Go to login",
+    "failTitle": "Verification failed",
+    "backToRegister": "Back to sign up",
+    "noToken": "No verification token found in the link.",
+    "genericFailure": "Verification failed. The link may have expired."
+  },
+
 
   "register": {
     "title": "Begin your map",
