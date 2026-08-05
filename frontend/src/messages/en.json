@@ -41,6 +41,16 @@
     "logIn": "Log in"
   },
 
+  "forgotPassword": {
+    "title": "Reset your password",
+    "subtitle": "Enter your email and we'll send you a reset link.",
+    "email": "Email",
+    "sendResetLink": "Send reset link",
+    "sending": "Sending...",
+    "submittedMessage": "If an account with that email exists, a reset link has been sent. Check your inbox.",
+    "backToLogin": "Back to login"
+  },
+
   
   "dashboard": {
     "goodMorning": "Good morning",
