@@ -9,6 +9,7 @@ import Stars from "@/components/Stars";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import WishJourneyMark from "@/components/WishJourneyMark";
 
 declare global {
   interface Window {
@@ -102,12 +103,11 @@ export default function LoginPage() {
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
           style={{
-            background:
-              "linear-gradient(135deg, var(--nebula-magenta), var(--nebula-orange))",
-            boxShadow: "0 0 30px -6px rgba(224, 64, 158, 0.55)",
+            background: "#171025",
+            boxShadow: "0 0 24px -8px rgba(224, 64, 158, 0.4)",
           }}
         >
-          <span className="text-2xl">🌅</span>
+          <WishJourneyMark className="w-8 h-8" />
         </div>
 
         <h1 className="font-heading text-2xl font-bold mb-1 text-nebula-ink">
