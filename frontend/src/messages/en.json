@@ -15,19 +15,6 @@
     "newHere": "New here?",
     "createAccount": "Create an account"
   },
-
-  "verifyEmail": {
-    "verifyingTitle": "Verifying your email",
-    "verifyingSubtitle": "Just a moment while we confirm it's really you.",
-    "successTitle": "Email verified!",
-    "goToLogin": "Go to login",
-    "failTitle": "Verification failed",
-    "backToRegister": "Back to sign up",
-    "noToken": "No verification token found in the link.",
-    "genericFailure": "Verification failed. The link may have expired."
-  },
-
-
   "register": {
     "title": "Begin your map",
     "subtitle": "Create an account to start your first wish.",
@@ -40,7 +27,16 @@
     "alreadyHaveAccount": "Already have an account?",
     "logIn": "Log in"
   },
-
+  "verifyEmail": {
+    "verifyingTitle": "Verifying your email",
+    "verifyingSubtitle": "Just a moment while we confirm it's really you.",
+    "successTitle": "Email verified!",
+    "goToLogin": "Go to login",
+    "failTitle": "Verification failed",
+    "backToRegister": "Back to sign up",
+    "noToken": "No verification token found in the link.",
+    "genericFailure": "Verification failed. The link may have expired."
+  },
   "forgotPassword": {
     "title": "Reset your password",
     "subtitle": "Enter your email and we'll send you a reset link.",
@@ -50,7 +46,6 @@
     "submittedMessage": "If an account with that email exists, a reset link has been sent. Check your inbox.",
     "backToLogin": "Back to login"
   },
-
   "resetPassword": {
     "title": "Set a new password",
     "subtitle": "Choose a strong password for your account.",
@@ -62,8 +57,6 @@
     "noTokenTitle": "Link not valid",
     "noTokenMessage": "No reset token found. Please use the link from your email."
   },
-
-  
   "dashboard": {
     "goodMorning": "Good morning",
     "nextDreamAwaits": "Your next dream awaits",
@@ -73,6 +66,15 @@
     "inProgress": "In progress",
     "completed": "Completed",
     "recommendedForYou": "Recommended for you",
-    "logOut": "Log out"
+    "logOut": "Log out",
+    "navHome": "Home",
+    "navExplore": "Explore",
+    "navMemories": "Memories",
+    "navFriends": "Friends",
+    "navCommunity": "Community",
+    "inProgressTravel": "In progress · Travel",
+    "budgetFriendlyPlan": "Budget-friendly plan · 68% saved",
+    "idea": "Idea",
+    "saved": "Saved"
   }
 }

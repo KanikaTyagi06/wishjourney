@@ -6,11 +6,22 @@ import { useTranslations } from "next-intl";
 import { getAccessToken, logout } from "@/lib/auth";
 import { api } from "@/lib/api";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import WishJourneyMark from "@/components/WishJourneyMark";
+import Stars from "@/components/Stars";
+import { Button } from "@/components/ui/button";
 
 interface Profile {
   username: string;
   full_name: string;
 }
+
+const SOFT_BG = {
+  background:
+    "radial-gradient(140% 90% at 15% 0%, rgba(224, 64, 158, 0.16) 0%, transparent 55%), " +
+    "radial-gradient(120% 80% at 100% 20%, rgba(255, 122, 69, 0.12) 0%, transparent 50%), " +
+    "radial-gradient(120% 90% at 50% 110%, rgba(82, 113, 255, 0.15) 0%, transparent 55%), " +
+    "var(--nebula-bg)",
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -44,8 +55,11 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-sm text-text-secondary">Loading...</p>
+      <main
+        className="min-h-screen flex items-center justify-center"
+        style={SOFT_BG}
+      >
+        <div className="w-6 h-6 rounded-full border-2 border-nebula-magenta border-t-transparent animate-spin" />
       </main>
     );
   }
@@ -53,24 +67,42 @@ export default function DashboardPage() {
   const displayName = profile?.full_name || profile?.username || "there";
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b border-border-soft">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-amber flex items-center justify-center text-sm">
-              🌅
+    <div className="min-h-screen relative" style={SOFT_BG}>
+      <Stars count={10} className="opacity-40" />
+
+      <nav className="border-b border-nebula-line relative z-10">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: "#171025" }}
+            >
+              <WishJourneyMark className="w-5 h-5" />
             </div>
-            <span className="font-medium text-sm">WishJourney</span>
+            <span className="font-heading font-bold text-sm text-nebula-ink">
+              WishJourney
+            </span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-text-secondary">
-            <span className="text-brand-rose font-medium">Home</span>
-            <span>Explore</span>
-            <span>Memories</span>
-            <span>Friends</span>
+          <div className="flex items-center gap-6 text-sm text-nebula-ink-soft">
+            <span className="text-nebula-magenta font-semibold">
+              {t("navHome")}
+            </span>
+            <span className="hover:text-nebula-ink cursor-pointer transition-colors">
+              {t("navExplore")}
+            </span>
+            <span className="hover:text-nebula-ink cursor-pointer transition-colors">
+              {t("navMemories")}
+            </span>
+            <span className="hover:text-nebula-ink cursor-pointer transition-colors">
+              {t("navCommunity")}
+            </span>
+            <span className="hover:text-nebula-ink cursor-pointer transition-colors">
+              {t("navFriends")}
+            </span>
             <LanguageSwitcher />
             <button
               onClick={handleLogout}
-              className="text-xs text-text-secondary border border-border-soft rounded-lg px-3 py-1.5 ml-2"
+              className="text-xs text-nebula-ink-soft border border-nebula-line rounded-lg px-3 py-1.5 ml-1 hover:text-nebula-ink hover:border-nebula-ink-soft transition-colors"
             >
               {t("logOut")}
             </button>
@@ -78,76 +110,126 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8 relative z-10">
         <div className="mb-8">
-          <p className="text-sm text-text-secondary">{t("goodMorning")}</p>
-          <h1 className="text-2xl font-medium">{displayName}</h1>
-          <p className="text-sm text-text-secondary mt-1">{t("nextDreamAwaits")}</p>
+          <p className="text-sm text-nebula-ink-soft">{t("goodMorning")}</p>
+          <h1 className="font-heading text-2xl font-bold text-nebula-ink mt-0.5">
+            {displayName}
+          </h1>
+          <p className="text-sm text-nebula-ink-soft mt-1">
+            {t("nextDreamAwaits")}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2 space-y-4">
-            <div className="bg-brand-peach rounded-2xl p-5">
-              <p className="text-xs text-brand-rose-dark font-medium mb-1">
-                In progress · Travel
+            <div
+              className="rounded-2xl p-5 border border-nebula-line"
+              style={{ background: "var(--nebula-surface-2)" }}
+            >
+              <p className="text-xs text-nebula-magenta font-semibold mb-1">
+                {t("inProgressTravel")}
               </p>
-              <p className="text-lg font-medium text-brand-rose-darker">
+              <p className="text-lg font-semibold text-nebula-ink">
                 Trek to Everest Base Camp
               </p>
-              <p className="text-sm text-brand-rose-dark mt-2">
-                Budget-friendly plan · 68% saved
+              <p className="text-sm text-nebula-ink-soft mt-2">
+                {t("budgetFriendlyPlan")}
               </p>
-              <div className="h-1.5 bg-white/50 rounded-full mt-3 overflow-hidden">
-                <div className="h-full w-[68%] bg-brand-rose-dark rounded-full" />
+              <div className="h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
+                <div
+                  className="h-full w-[68%] rounded-full"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
+                  }}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-brand-amber rounded-2xl p-4">
-                <p className="text-sm font-medium text-brand-amber-text">
+              <div
+                className="rounded-2xl p-4 border border-nebula-line"
+                style={{ background: "var(--nebula-surface-2)" }}
+              >
+                <p className="text-sm font-medium text-nebula-ink">
                   Learn Spanish
                 </p>
-                <p className="text-xs text-brand-amber-icon mt-0.5">Idea</p>
+                <p
+                  className="text-xs mt-0.5 font-medium"
+                  style={{ color: "var(--nebula-orange)" }}
+                >
+                  {t("idea")}
+                </p>
               </div>
-              <div className="bg-brand-purple rounded-2xl p-4">
-                <p className="text-sm font-medium text-brand-purple-text">
+              <div
+                className="rounded-2xl p-4 border border-nebula-line"
+                style={{ background: "var(--nebula-surface-2)" }}
+              >
+                <p className="text-sm font-medium text-nebula-ink">
                   Cherry blossoms, Japan
                 </p>
-                <p className="text-xs text-brand-purple-icon mt-0.5">Saved</p>
+                <p
+                  className="text-xs mt-0.5 font-medium"
+                  style={{ color: "var(--nebula-blue)" }}
+                >
+                  {t("saved")}
+                </p>
               </div>
             </div>
 
-            <button className="w-full bg-brand-rose text-brand-peach rounded-lg py-3 text-sm font-medium">
+            <Button
+              className="w-full rounded-xl py-5 text-sm font-bold border-0 text-[#1A0E24]"
+              style={{
+                background:
+                  "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
+                boxShadow: "0 8px 22px -8px rgba(224, 64, 158, 0.5)",
+              }}
+            >
               {t("planNextWish")}
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-4">
-            <div className="border border-border-soft rounded-2xl p-4">
-              <p className="text-xs text-text-secondary mb-3 font-medium">
+            <div
+              className="rounded-2xl p-4 border border-nebula-line"
+              style={{ background: "var(--nebula-surface-2)" }}
+            >
+              <p className="text-xs text-nebula-ink-soft mb-3 font-semibold">
                 {t("yourProgress")}
               </p>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-text-secondary">{t("bucketList")}</span>
-                <span className="font-medium">14</span>
+                <span className="text-nebula-ink-soft">
+                  {t("bucketList")}
+                </span>
+                <span className="font-semibold text-nebula-ink">14</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-text-secondary">{t("inProgress")}</span>
-                <span className="font-medium">3</span>
+                <span className="text-nebula-ink-soft">
+                  {t("inProgress")}
+                </span>
+                <span className="font-semibold text-nebula-ink">3</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-text-secondary">{t("completed")}</span>
-                <span className="font-medium">7</span>
+                <span className="text-nebula-ink-soft">{t("completed")}</span>
+                <span className="font-semibold text-nebula-ink">7</span>
               </div>
             </div>
 
-            <div className="border border-border-soft rounded-2xl p-4">
-              <p className="text-xs text-text-secondary mb-3 font-medium">
+            <div
+              className="rounded-2xl p-4 border border-nebula-line"
+              style={{ background: "var(--nebula-surface-2)" }}
+            >
+              <p className="text-xs text-nebula-ink-soft mb-3 font-semibold">
                 {t("recommendedForYou")}
               </p>
-              <p className="text-sm mb-1">🏃 Run a marathon</p>
-              <p className="text-sm mb-1">👨‍🍳 Cooking class</p>
-              <p className="text-sm">📷 Photography basics</p>
+              <p className="text-sm mb-1.5 text-nebula-ink">
+                🏃 Run a marathon
+              </p>
+              <p className="text-sm mb-1.5 text-nebula-ink">
+                👨‍🍳 Cooking class
+              </p>
+              <p className="text-sm text-nebula-ink">📷 Photography basics</p>
             </div>
           </div>
         </div>

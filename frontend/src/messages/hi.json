@@ -15,18 +15,6 @@
     "newHere": "यहाँ नए हैं?",
     "createAccount": "खाता बनाएं"
   },
-
-  "verifyEmail": {
-    "verifyingTitle": "ईमेल सत्यापित हो रहा है",
-    "verifyingSubtitle": "बस एक पल, हम इसे पुष्टि कर रहे हैं।",
-    "successTitle": "ईमेल सत्यापित हो गया!",
-    "goToLogin": "लॉगिन पर जाएं",
-    "failTitle": "सत्यापन विफल",
-    "backToRegister": "साइन अप पर वापस जाएं",
-    "noToken": "लिंक में कोई सत्यापन टोकन नहीं मिला।",
-    "genericFailure": "सत्यापन विफल हुआ। लिंक समाप्त हो सकता है।"
-  },
-
   "register": {
     "title": "अपना नक्शा शुरू करें",
     "subtitle": "अपनी पहली इच्छा शुरू करने के लिए खाता बनाएं।",
@@ -39,7 +27,16 @@
     "alreadyHaveAccount": "पहले से खाता है?",
     "logIn": "लॉग इन करें"
   },
-
+  "verifyEmail": {
+    "verifyingTitle": "ईमेल सत्यापित हो रहा है",
+    "verifyingSubtitle": "बस एक पल, हम इसे पुष्टि कर रहे हैं।",
+    "successTitle": "ईमेल सत्यापित हो गया!",
+    "goToLogin": "लॉगिन पर जाएं",
+    "failTitle": "सत्यापन विफल",
+    "backToRegister": "साइन अप पर वापस जाएं",
+    "noToken": "लिंक में कोई सत्यापन टोकन नहीं मिला।",
+    "genericFailure": "सत्यापन विफल हुआ। लिंक समाप्त हो सकता है।"
+  },
   "forgotPassword": {
     "title": "अपना पासवर्ड रीसेट करें",
     "subtitle": "अपना ईमेल दर्ज करें, हम आपको रीसेट लिंक भेजेंगे।",
@@ -49,7 +46,6 @@
     "submittedMessage": "यदि उस ईमेल से खाता मौजूद है, तो रीसेट लिंक भेज दिया गया है। अपना इनबॉक्स जांचें।",
     "backToLogin": "लॉगिन पर वापस जाएं"
   },
-
   "resetPassword": {
     "title": "नया पासवर्ड सेट करें",
     "subtitle": "अपने खाते के लिए एक मजबूत पासवर्ड चुनें।",
@@ -61,8 +57,6 @@
     "noTokenTitle": "लिंक मान्य नहीं है",
     "noTokenMessage": "कोई रीसेट टोकन नहीं मिला। कृपया अपने ईमेल से लिंक का उपयोग करें।"
   },
-
-  
   "dashboard": {
     "goodMorning": "सुप्रभात",
     "nextDreamAwaits": "आपका अगला सपना आपका इंतज़ार कर रहा है",
@@ -72,6 +66,15 @@
     "inProgress": "प्रगति में",
     "completed": "पूर्ण",
     "recommendedForYou": "आपके लिए अनुशंसित",
-    "logOut": "लॉग आउट"
+    "logOut": "लॉग आउट",
+    "navHome": "होम",
+    "navExplore": "एक्सप्लोर",
+    "navMemories": "यादें",
+    "navFriends": "दोस्त",
+    "navCommunity": "समुदाय",
+    "inProgressTravel": "प्रगति में · यात्रा",
+    "budgetFriendlyPlan": "बजट-अनुकूल योजना · 68% बचत",
+    "idea": "विचार",
+    "saved": "सहेजा गया"
   }
 }
