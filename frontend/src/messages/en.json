@@ -110,5 +110,32 @@
     "paused": "Paused",
     "cancelled": "Cancelled",
     "archived": "Archived"
+  },
+  "wishDetail": {
+    "backToBucketList": "← Back to bucket list",
+    "markAsCompleted": "Mark as Completed",
+    "wishTitle": "Title",
+    "status": "Status",
+    "progress": "Progress",
+    "description": "Description",
+    "estimatedBudget": "Estimated budget",
+    "actualCost": "Actual cost",
+    "targetDate": "Target date",
+    "notes": "Notes",
+    "priorityWish": "Priority wish",
+    "publicWish": "Visible on my profile",
+    "saveChanges": "Save changes",
+    "saving": "Saving...",
+    "saved": "Changes saved.",
+    "saveError": "Could not save changes.",
+    "markedCompleted": "Marked as completed! 🎉",
+    "deleteWish": "Delete wish",
+    "confirmDeleteTitle": "Remove this wish?",
+    "confirmDelete": "This cannot be undone. Your progress and notes on this wish will be lost.",
+    "deleting": "Deleting...",
+    "deleteError": "Could not delete wish.",
+    "cancel": "Cancel",
+    "progressHelper": "Updates automatically once AI planning is available",
+    "actualCostHelper": "Update this as you actually spend money on this wish"
   }
 }

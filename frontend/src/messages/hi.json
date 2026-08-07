@@ -110,5 +110,32 @@
     "paused": "रुका हुआ",
     "cancelled": "रद्द",
     "archived": "संग्रहीत"
+  },
+  "wishDetail": {
+    "backToBucketList": "← बकेट लिस्ट पर वापस जाएं",
+    "markAsCompleted": "पूर्ण के रूप में चिह्नित करें",
+    "wishTitle": "शीर्षक",
+    "status": "स्थिति",
+    "progress": "प्रगति",
+    "description": "विवरण",
+    "estimatedBudget": "अनुमानित बजट",
+    "actualCost": "वास्तविक लागत",
+    "targetDate": "लक्ष्य तिथि",
+    "notes": "नोट्स",
+    "priorityWish": "प्राथमिकता वाली इच्छा",
+    "publicWish": "मेरी प्रोफ़ाइल पर दिखाई दे",
+    "saveChanges": "परिवर्तन सहेजें",
+    "saving": "सहेजा जा रहा है...",
+    "saved": "परिवर्तन सहेज लिए गए।",
+    "saveError": "परिवर्तन सहेजे नहीं जा सके।",
+    "markedCompleted": "पूर्ण के रूप में चिह्नित! 🎉",
+    "deleteWish": "इच्छा हटाएं",
+    "confirmDeleteTitle": "इस इच्छा को हटाएं?",
+    "confirmDelete": "यह पूर्ववत नहीं किया जा सकता। इस इच्छा पर आपकी प्रगति और नोट्स खो जाएंगे।",
+    "deleting": "हटाया जा रहा है...",
+    "deleteError": "इच्छा हटाई नहीं जा सकी।",
+    "cancel": "रद्द करें",
+    "progressHelper": "AI planning उपलब्ध होने पर यह अपने आप अपडेट होगा",
+    "actualCostHelper": "जैसे-जैसे आप इस इच्छा पर वास्तव में खर्च करें, इसे अपडेट करें"
   }
 }
