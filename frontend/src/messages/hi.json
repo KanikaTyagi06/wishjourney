@@ -76,5 +76,39 @@
     "budgetFriendlyPlan": "बजट-अनुकूल योजना · 68% बचत",
     "idea": "विचार",
     "saved": "सहेजा गया"
+  },
+
+  "bucketList": {
+    "title": "मेरी बकेट लिस्ट",
+    "wishCount": "{count} इच्छाएं चार्ट की गईं",
+    "addWish": "+ इच्छा जोड़ें",
+    "cancel": "रद्द करें",
+    "wishTitle": "शीर्षक",
+    "wishTitlePlaceholder": "जैसे एवरेस्ट बेस कैंप ट्रेक",
+    "category": "श्रेणी",
+    "selectCategory": "एक श्रेणी चुनें",
+    "description": "विवरण",
+    "estimatedBudget": "अनुमानित बजट",
+    "targetDate": "लक्ष्य तिथि",
+    "saveWish": "इच्छा सहेजें",
+    "saving": "सहेजा जा रहा है...",
+    "addError": "इच्छा जोड़ी नहीं जा सकी। कृपया पुनः प्रयास करें।",
+    "filterAll": "सभी",
+    "emptyState": "अभी तक यहां कोई इच्छा नहीं है। अपना आसमान चार्ट करना शुरू करें।",
+    "confirmDeleteTitle": "इस इच्छा को हटाएं?",
+    "confirmDelete": "यह पूर्ववत नहीं किया जा सकता। इस इच्छा पर आपकी प्रगति और नोट्स खो जाएंगे।",
+    "deleting": "हटाया जा रहा है...",
+    "deleteError": "इच्छा हटाई नहीं जा सकी।",
+    "delete": "हटाएं"
+  },
+  "wishStatus": {
+    "idea": "विचार",
+    "saved": "सहेजा गया",
+    "planning": "योजना बना रहे हैं",
+    "in_progress": "प्रगति में",
+    "completed": "पूर्ण",
+    "paused": "रुका हुआ",
+    "cancelled": "रद्द",
+    "archived": "संग्रहीत"
   }
 }

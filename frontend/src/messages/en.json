@@ -76,5 +76,39 @@
     "budgetFriendlyPlan": "Budget-friendly plan · 68% saved",
     "idea": "Idea",
     "saved": "Saved"
+  },
+
+  "bucketList": {
+    "title": "My Bucket List",
+    "wishCount": "{count, plural, one {# wish charted} other {# wishes charted}}",
+    "addWish": "+ Add Wish",
+    "cancel": "Cancel",
+    "wishTitle": "Title",
+    "wishTitlePlaceholder": "e.g. Trek to Everest Base Camp",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "description": "Description",
+    "estimatedBudget": "Estimated budget",
+    "targetDate": "Target date",
+    "saveWish": "Save wish",
+    "saving": "Saving...",
+    "addError": "Could not add wish. Please try again.",
+    "filterAll": "All",
+    "emptyState": "No wishes here yet. Start charting your sky.",
+    "confirmDeleteTitle": "Remove this wish?",
+    "confirmDelete": "This cannot be undone. Your progress and notes on this wish will be lost.",
+    "deleting": "Deleting...",
+    "deleteError": "Could not delete wish.",
+    "delete": "Delete"
+  },
+  "wishStatus": {
+    "idea": "Idea",
+    "saved": "Saved",
+    "planning": "Planning",
+    "in_progress": "In Progress",
+    "completed": "Completed",
+    "paused": "Paused",
+    "cancelled": "Cancelled",
+    "archived": "Archived"
   }
 }

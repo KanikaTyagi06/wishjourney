@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { getAccessToken, logout } from "@/lib/auth";
+import { getAccessToken } from "@/lib/auth";
 import { api } from "@/lib/api";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import WishJourneyMark from "@/components/WishJourneyMark";
+import AppNavbar from "@/components/AppNavbar";
 import Stars from "@/components/Stars";
 import { Button } from "@/components/ui/button";
 
@@ -48,11 +47,6 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, [router, locale]);
 
-  function handleLogout() {
-    logout();
-    router.push(`/${locale}/login`);
-  }
-
   if (loading) {
     return (
       <main
@@ -70,45 +64,7 @@ export default function DashboardPage() {
     <div className="min-h-screen relative" style={SOFT_BG}>
       <Stars count={10} className="opacity-40" />
 
-      <nav className="border-b border-nebula-line relative z-10">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "#171025" }}
-            >
-              <WishJourneyMark className="w-5 h-5" />
-            </div>
-            <span className="font-heading font-bold text-sm text-nebula-ink">
-              WishJourney
-            </span>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-nebula-ink-soft">
-            <span className="text-nebula-magenta font-semibold">
-              {t("navHome")}
-            </span>
-            <span className="hover:text-nebula-ink cursor-pointer transition-colors">
-              {t("navExplore")}
-            </span>
-            <span className="hover:text-nebula-ink cursor-pointer transition-colors">
-              {t("navMemories")}
-            </span>
-            <span className="hover:text-nebula-ink cursor-pointer transition-colors">
-              {t("navCommunity")}
-            </span>
-            <span className="hover:text-nebula-ink cursor-pointer transition-colors">
-              {t("navFriends")}
-            </span>
-            <LanguageSwitcher />
-            <button
-              onClick={handleLogout}
-              className="text-xs text-nebula-ink-soft border border-nebula-line rounded-lg px-3 py-1.5 ml-1 hover:text-nebula-ink hover:border-nebula-ink-soft transition-colors"
-            >
-              {t("logOut")}
-            </button>
-          </div>
-        </div>
-      </nav>
+      <AppNavbar active="home" />
 
       <main className="max-w-5xl mx-auto px-6 py-8 relative z-10">
         <div className="mb-8">
@@ -198,12 +154,15 @@ export default function DashboardPage() {
               <p className="text-xs text-nebula-ink-soft mb-3 font-semibold">
                 {t("yourProgress")}
               </p>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-nebula-ink-soft">
+              <a
+                href={`/${locale}/bucket-list`}
+                className="flex justify-between text-sm mb-2 hover:opacity-80 transition-opacity"
+              >
+                <span className="text-nebula-ink-soft underline decoration-dotted">
                   {t("bucketList")}
                 </span>
                 <span className="font-semibold text-nebula-ink">14</span>
-              </div>
+              </a>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-nebula-ink-soft">
                   {t("inProgress")}
