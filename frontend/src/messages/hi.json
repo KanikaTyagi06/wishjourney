@@ -166,5 +166,32 @@
     "finish": "समाप्त करें",
     "saving": "सहेजा जा रहा है...",
     "submitError": "आपकी प्राथमिकताएं सहेजी नहीं जा सकीं। कृपया पुनः प्रयास करें।"
+  },
+
+  "profile": {
+    "title": "प्रोफ़ाइल सेटिंग्स",
+    "fullName": "पूरा नाम",
+    "bio": "बायो",
+    "bioPlaceholder": "अपनी कहानी बताएं...",
+    "city": "शहर",
+    "country": "देश",
+    "budgetPreference": "बजट प्राथमिकता",
+    "budget_low": "कम",
+    "budget_medium": "मध्यम",
+    "budget_high": "उच्च",
+    "groupPreference": "आप आमतौर पर किसके साथ योजना बनाते हैं?",
+    "group_solo": "अकेले",
+    "group_couple": "जोड़ा",
+    "group_friends": "दोस्त",
+    "group_family": "परिवार",
+    "scopePreference": "अनुभव क्षेत्र",
+    "scope_local": "स्थानीय",
+    "scope_national": "राष्ट्रीय",
+    "scope_international": "अंतर्राष्ट्रीय",
+    "publicProfile": "मेरी प्रोफ़ाइल अन्य उपयोगकर्ताओं को दिखाई दे",
+    "saveChanges": "परिवर्तन सहेजें",
+    "saving": "सहेजा जा रहा है...",
+    "saved": "प्रोफ़ाइल अपडेट हो गई।",
+    "saveError": "परिवर्तन सहेजे नहीं जा सके।"
   }
 }

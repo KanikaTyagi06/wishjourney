@@ -166,5 +166,32 @@
     "finish": "Finish",
     "saving": "Saving...",
     "submitError": "Could not save your preferences. Please try again."
+  },
+
+  "profile": {
+    "title": "Profile Settings",
+    "fullName": "Full name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell your story...",
+    "city": "City",
+    "country": "Country",
+    "budgetPreference": "Budget preference",
+    "budget_low": "Low",
+    "budget_medium": "Medium",
+    "budget_high": "High",
+    "groupPreference": "Who do you usually plan with?",
+    "group_solo": "Solo",
+    "group_couple": "Couple",
+    "group_friends": "Friends",
+    "group_family": "Family",
+    "scopePreference": "Experience scope",
+    "scope_local": "Local",
+    "scope_national": "National",
+    "scope_international": "International",
+    "publicProfile": "Make my profile visible to other users",
+    "saveChanges": "Save changes",
+    "saving": "Saving...",
+    "saved": "Profile updated.",
+    "saveError": "Could not save changes."
   }
 }
