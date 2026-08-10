@@ -137,5 +137,34 @@
     "cancel": "रद्द करें",
     "progressHelper": "AI planning उपलब्ध होने पर यह अपने आप अपडेट होगा",
     "actualCostHelper": "जैसे-जैसे आप इस इच्छा पर वास्तव में खर्च करें, इसे अपडेट करें"
+  },
+
+  "onboarding": {
+    "skip": "अभी के लिए छोड़ें",
+    "stepOf": "चरण {current} / {total}",
+    "interestsTitle": "आपको क्या आकर्षित करता है?",
+    "interestsSubtitle": "कुछ श्रेणियां चुनें जो आपको पसंद हों।",
+    "budgetTitle": "आपका बजट क्षेत्र क्या है?",
+    "budgetSubtitle": "हम सुझावों को इसके अनुसार तैयार करेंगे।",
+    "budget_low": "कम बजट · किफायती रखें",
+    "budget_medium": "मध्यम बजट · कुछ लचीलापन",
+    "budget_high": "उच्च बजट · पूरी तरह से",
+    "groupTitle": "आप आमतौर पर किसके साथ योजना बनाते हैं?",
+    "groupSubtitle": "इससे हमें सही अनुभव सुझाने में मदद मिलती है।",
+    "group_solo": "अकेले",
+    "group_couple": "जोड़ा",
+    "group_friends": "दोस्त",
+    "group_family": "परिवार",
+    "locationTitle": "आप कहां से चार्ट कर रहे हैं?",
+    "locationSubtitle": "और आप कितनी दूर यात्रा करने को तैयार हैं?",
+    "cityPlaceholder": "आपका शहर",
+    "scope_local": "स्थानीय · घर के पास",
+    "scope_national": "राष्ट्रीय · देश के भीतर",
+    "scope_international": "अंतर्राष्ट्रीय · दुनिया में कहीं भी",
+    "back": "वापस",
+    "continue": "जारी रखें",
+    "finish": "समाप्त करें",
+    "saving": "सहेजा जा रहा है...",
+    "submitError": "आपकी प्राथमिकताएं सहेजी नहीं जा सकीं। कृपया पुनः प्रयास करें।"
   }
 }

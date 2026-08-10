@@ -42,7 +42,13 @@ export default function DashboardPage() {
       .get("/profiles/me/", {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setProfile(res.data))
+      .then((res) => {
+        if (!res.data.onboarding_completed) {
+          router.push(`/${locale}/onboarding`);
+          return;
+        }
+        setProfile(res.data);
+      })
       .catch(() => router.push(`/${locale}/login`))
       .finally(() => setLoading(false));
   }, [router, locale]);

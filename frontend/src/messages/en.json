@@ -137,5 +137,34 @@
     "cancel": "Cancel",
     "progressHelper": "Updates automatically once AI planning is available",
     "actualCostHelper": "Update this as you actually spend money on this wish"
+  },
+
+  "onboarding": {
+    "skip": "Skip for now",
+    "stepOf": "Step {current} of {total}",
+    "interestsTitle": "What calls to you?",
+    "interestsSubtitle": "Pick a few categories you're drawn to.",
+    "budgetTitle": "What's your comfort zone?",
+    "budgetSubtitle": "We'll tailor suggestions to fit.",
+    "budget_low": "Low budget · keep it affordable",
+    "budget_medium": "Medium budget · some flexibility",
+    "budget_high": "High budget · go all in",
+    "groupTitle": "Who do you usually plan with?",
+    "groupSubtitle": "This helps us suggest the right experiences.",
+    "group_solo": "Solo",
+    "group_couple": "Couple",
+    "group_friends": "Friends",
+    "group_family": "Family",
+    "locationTitle": "Where are you charting from?",
+    "locationSubtitle": "And how far are you willing to travel?",
+    "cityPlaceholder": "Your city",
+    "scope_local": "Local · close to home",
+    "scope_national": "National · within the country",
+    "scope_international": "International · anywhere in the world",
+    "back": "Back",
+    "continue": "Continue",
+    "finish": "Finish",
+    "saving": "Saving...",
+    "submitError": "Could not save your preferences. Please try again."
   }
 }
