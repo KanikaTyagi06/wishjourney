@@ -192,6 +192,22 @@
     "saveChanges": "Save changes",
     "saving": "Saving...",
     "saved": "Profile updated.",
-    "saveError": "Could not save changes."
+    "saveError": "Could not save changes.",
+    "editTitle": "Edit Profile",
+    "editSettings": "Edit Settings",
+    "notSet": "Not set",
+    "public": "Public",
+    "private": "Private",
+    "cancel": "Cancel",
+    "changePhoto": "Change photo",
+    "avatarError": "Could not upload photo. Please try again.",
+    "gender": "Gender",
+    "gender_male": "Male",
+    "gender_female": "Female",
+    "gender_other": "Other",
+    "gender_prefer_not_to_say": "Prefer not to say",
+    "addPhoto": "+ Add photo",
+    "removePhoto": "Remove photo",
+    "close": "Close"
   }
 }

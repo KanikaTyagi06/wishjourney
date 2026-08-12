@@ -192,6 +192,22 @@
     "saveChanges": "परिवर्तन सहेजें",
     "saving": "सहेजा जा रहा है...",
     "saved": "प्रोफ़ाइल अपडेट हो गई।",
-    "saveError": "परिवर्तन सहेजे नहीं जा सके।"
+    "saveError": "परिवर्तन सहेजे नहीं जा सके।",
+    "editTitle": "प्रोफ़ाइल संपादित करें",
+    "editSettings": "सेटिंग्स संपादित करें",
+    "notSet": "सेट नहीं है",
+    "public": "सार्वजनिक",
+    "private": "निजी",
+    "cancel": "रद्द करें",
+    "changePhoto": "फ़ोटो बदलें",
+    "avatarError": "फ़ोटो अपलोड नहीं हो सकी। कृपया पुनः प्रयास करें।",
+    "gender": "लिंग",
+    "gender_male": "पुरुष",
+    "gender_female": "महिला",
+    "gender_other": "अन्य",
+    "gender_prefer_not_to_say": "बताना नहीं चाहते",
+    "addPhoto": "+ फ़ोटो जोड़ें",
+    "removePhoto": "फ़ोटो हटाएं",
+    "close": "बंद करें"
   }
 }

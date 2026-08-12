@@ -18,6 +18,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "full_name",
+            "gender",
             "bio",
             "profile_picture",
             "city",

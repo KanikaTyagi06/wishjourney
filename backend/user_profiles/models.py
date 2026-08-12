@@ -27,6 +27,23 @@ class UserProfile(models.Model):
         MEDIUM = "medium", "Medium budget"
         HIGH = "high", "High budget"
 
+    class Gender(models.TextChoices):
+        MALE = "male", "Male"
+        FEMALE = "female", "Female"
+        OTHER = "other", "Other"
+        PREFER_NOT_TO_SAY = "prefer_not_to_say", "Prefer not to say"
+
+    class GroupPreference(models.TextChoices):
+        SOLO = "solo", "Solo"
+        COUPLE = "couple", "Couple"
+        FRIENDS = "friends", "Friends"
+        FAMILY = "family", "Family"
+
+    class ExperienceScope(models.TextChoices):
+        LOCAL = "local", "Local"
+        NATIONAL = "national", "National"
+        INTERNATIONAL = "international", "International"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -35,6 +52,12 @@ class UserProfile(models.Model):
         help_text="The user this profile belongs to.",
     )
     full_name = models.CharField(max_length=150, blank=True)
+    gender = models.CharField(
+        max_length=20,
+        choices=Gender.choices,
+        blank=True,
+        help_text="Used to show a suitable default avatar when no profile picture is set.",
+    )
     bio = models.TextField(max_length=500, blank=True, help_text="Short biography, max 500 characters.")
     profile_picture = models.ImageField(
         upload_to=profile_picture_upload_path,
@@ -64,24 +87,11 @@ class UserProfile(models.Model):
         blank=True,
         help_text="List of preferred wish categories, e.g. ['travel', 'education'].",
     )
-
-    class GroupPreference(models.TextChoices):
-        SOLO = "solo", "Solo"
-        COUPLE = "couple", "Couple"
-        FRIENDS = "friends", "Friends"
-        FAMILY = "family", "Family"
-
     group_preference = models.CharField(
         max_length=10,
         choices=GroupPreference.choices,
         blank=True,
     )
-
-    class ExperienceScope(models.TextChoices):
-        LOCAL = "local", "Local"
-        NATIONAL = "national", "National"
-        INTERNATIONAL = "international", "International"
-
     experience_scope_preference = models.CharField(
         max_length=15,
         choices=ExperienceScope.choices,
@@ -105,4 +115,3 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profile of {self.user.email}"
-
