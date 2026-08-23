@@ -10,6 +10,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     email = serializers.EmailField(source="user.email", read_only=True)
     username = serializers.CharField(source="user.username", read_only=True)
+    is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
 
     class Meta:
         model = UserProfile
@@ -20,6 +21,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "full_name",
             "gender",
             "bio",
+            "is_staff",
             "profile_picture",
             "city",
             "country",
