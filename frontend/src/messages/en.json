@@ -270,6 +270,24 @@
     "cancel": "Cancel",
     "emptyState": "No templates yet. Add your first recommended wish.",
     "accessDeniedTitle": "Access restricted",
-    "accessDeniedMessage": "This page is only available to WishJourney admins."
+    "accessDeniedMessage": "This page is only available to WishJourney admins.",
+        "addCoverPhoto": "+ Add cover photo",
+    "changeCoverPhoto": "Change cover photo",
+    "uploading": "Uploading...",
+    "coverPhotoHint": "Shown on the Explore page card",
+    "coverUploadError": "Could not upload cover photo."
+  },
+
+    "explore": {
+    "title": "Explore Ideas",
+    "subtitle": "Discover recommended wishes to add to your bucket list.",
+    "searchPlaceholder": "Search wishes...",
+    "filterAll": "All",
+    "emptyState": "No wishes found. Try a different search or category.",
+    "addToBucketList": "+ Add to Bucket List",
+    "adding": "Adding...",
+    "added": "✓ Added",
+    "addedToast": "Added to your bucket list!",
+    "addError": "Could not add wish. Please try again."
   }
 }

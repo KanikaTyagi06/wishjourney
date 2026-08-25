@@ -57,6 +57,7 @@ interface Wish {
   estimated_budget: number | null;
   target_date: string | null;
   is_public: boolean;
+  cover_image: string | null;
 }
 
 export default function BucketListPage() {
@@ -359,11 +360,21 @@ export default function BucketListPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredWishes.map((wish) => (
-              <div
+                            <div
                 key={wish.id}
-                className="rounded-2xl p-4 border border-nebula-line"
+                onClick={() => router.push(`/${locale}/bucket-list/${wish.id}`)}
+                className="rounded-2xl overflow-hidden border border-nebula-line cursor-pointer hover:border-nebula-magenta/40 transition-colors"
                 style={{ background: "var(--nebula-surface-2)" }}
               >
+                <div
+                  className="h-24"
+                  style={{
+                    background: wish.cover_image
+                      ? `url(${wish.cover_image}) center/cover no-repeat`
+                      : "linear-gradient(135deg, var(--nebula-magenta-soft), var(--nebula-orange-soft))",
+                  }}
+                />
+                <div className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <span
                     className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
@@ -375,7 +386,10 @@ export default function BucketListPage() {
                     {tStatus(wish.status)}
                   </span>
                   <button
-                    onClick={() => setDeleteTarget(wish)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(wish);
+                    }}
                     className="text-[10px] font-semibold text-nebula-ink-soft hover:text-destructive border border-nebula-line hover:border-destructive/40 rounded-full px-2.5 py-1 transition-colors"
                   >
                     {t("delete")}
@@ -395,6 +409,7 @@ export default function BucketListPage() {
                     {wish.target_date && <span>{wish.target_date}</span>}
                   </div>
                 )}
+                </div>
               </div>
             ))}
           </div>

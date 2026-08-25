@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getAccessToken } from "@/lib/auth";
 import { api } from "@/lib/api";
+import axios from "axios";
 import AppNavbar from "@/components/AppNavbar";
 import Stars from "@/components/Stars";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ interface Template {
   estimated_duration: string;
   difficulty_level: string;
   is_published: boolean;
+  cover_image: string | null;
 }
 
 export default function AdminWishTemplatesPage() {
@@ -64,6 +66,11 @@ export default function AdminWishTemplatesPage() {
   const [duration, setDuration] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [isPublished, setIsPublished] = useState(true);
+  const [currentCoverImage, setCurrentCoverImage] = useState<string | null>(
+    null
+  );
+  const [coverUploading, setCoverUploading] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   function authHeader() {
     return { Authorization: `Bearer ${getAccessToken()}` };
@@ -114,6 +121,7 @@ export default function AdminWishTemplatesPage() {
     setIsPublished(true);
     setEditingId(null);
     setFormError("");
+    setCurrentCoverImage(null);
   }
 
   function openCreateForm() {
@@ -122,6 +130,7 @@ export default function AdminWishTemplatesPage() {
   }
 
   function openEditForm(tpl: Template) {
+    setCurrentCoverImage(tpl.cover_image || null);
     setTitle(tpl.title);
     setCategoryId(tpl.category?.id || "");
     setDescription(tpl.description || "");
@@ -160,14 +169,17 @@ export default function AdminWishTemplatesPage() {
         await api.patch(`/wish-templates/${editingId}/`, payload, {
           headers: authHeader(),
         });
+        setShowForm(false);
+        resetForm();
+        loadData();
       } else {
-        await api.post("/wish-templates/", payload, {
+        const res = await api.post("/wish-templates/", payload, {
           headers: authHeader(),
         });
+        setEditingId(res.data.id);
+        setCurrentCoverImage(res.data.cover_image || null);
+        loadData();
       }
-      setShowForm(false);
-      resetForm();
-      loadData();
     } catch (err: any) {
       setFormError(
         err.response?.data?.detail ||
@@ -176,6 +188,29 @@ export default function AdminWishTemplatesPage() {
       );
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !editingId) return;
+
+    setCoverUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("cover_image", file);
+      const res = await axios.patch(
+        `http://127.0.0.1:8000/api/v1/wish-templates/${editingId}/`,
+        formData,
+        { headers: { Authorization: `Bearer ${getAccessToken()}` } }
+      );
+      setCurrentCoverImage(res.data.cover_image);
+      loadData();
+    } catch {
+      setFormError(t("coverUploadError"));
+    } finally {
+      setCoverUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
     }
   }
 
@@ -266,9 +301,18 @@ export default function AdminWishTemplatesPage() {
             {templates.map((tpl) => (
               <div
                 key={tpl.id}
-                className="rounded-2xl p-4 border border-nebula-line"
+                className="rounded-2xl overflow-hidden border border-nebula-line"
                 style={{ background: "var(--nebula-surface-2)" }}
               >
+                <div
+                  className="h-20"
+                  style={{
+                    background: tpl.cover_image
+                      ? `url(${tpl.cover_image}) center/cover no-repeat`
+                      : "linear-gradient(135deg, var(--nebula-magenta-soft), var(--nebula-orange-soft))",
+                  }}
+                />
+                <div className="p-4">
                 <div className="flex items-start justify-between mb-2">
                   <span
                     className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
@@ -313,6 +357,7 @@ export default function AdminWishTemplatesPage() {
                   )}
                   {tpl.estimated_duration && <span>{tpl.estimated_duration}</span>}
                 </div>
+                </div>
               </div>
             ))}
           </div>
@@ -329,6 +374,53 @@ export default function AdminWishTemplatesPage() {
             <h3 className="font-heading text-lg font-bold text-nebula-ink">
               {editingId ? t("editTemplate") : t("addTemplate")}
             </h3>
+
+            {editingId && (
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0"
+                  style={{
+                    background: currentCoverImage
+                      ? "transparent"
+                      : "linear-gradient(135deg, var(--nebula-magenta-soft), var(--nebula-orange-soft))",
+                    border: "1px solid var(--nebula-line)",
+                  }}
+                >
+                  {currentCoverImage && (
+                    <img
+                      src={currentCoverImage}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+                <div>
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={coverUploading}
+                    className="text-xs font-semibold hover:underline"
+                    style={{ color: "var(--nebula-magenta)" }}
+                  >
+                    {coverUploading
+                      ? t("uploading")
+                      : currentCoverImage
+                        ? t("changeCoverPhoto")
+                        : t("addCoverPhoto")}
+                  </button>
+                  <p className="text-[10px] text-nebula-ink-soft mt-0.5">
+                    {t("coverPhotoHint")}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div>
               <Label className="text-xs text-nebula-ink-soft mb-1.5 block">

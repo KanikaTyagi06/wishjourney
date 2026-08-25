@@ -104,6 +104,7 @@ class UserWishCreateSerializer(serializers.ModelSerializer):
                 title=template.title,
                 description=template.description,
                 estimated_budget=template.estimated_budget_max,
+                cover_image=template.cover_image if template.cover_image else None,
             )
         else:
             wish = UserWish.objects.create(user=user, **validated_data)
