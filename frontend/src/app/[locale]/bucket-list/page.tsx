@@ -360,9 +360,11 @@ export default function BucketListPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredWishes.map((wish) => (
-                            <div
+              <div
                 key={wish.id}
-                onClick={() => router.push(`/${locale}/bucket-list/${wish.id}`)}
+                onClick={() =>
+                  router.push(`/${locale}/bucket-list/${wish.id}`)
+                }
                 className="rounded-2xl overflow-hidden border border-nebula-line cursor-pointer hover:border-nebula-magenta/40 transition-colors"
                 style={{ background: "var(--nebula-surface-2)" }}
               >
@@ -375,40 +377,40 @@ export default function BucketListPage() {
                   }}
                 />
                 <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <span
-                    className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
-                    style={{
-                      color: STATUS_COLORS[wish.status],
-                      backgroundColor: `${STATUS_COLORS[wish.status]}22`,
-                    }}
-                  >
-                    {tStatus(wish.status)}
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteTarget(wish);
-                    }}
-                    className="text-[10px] font-semibold text-nebula-ink-soft hover:text-destructive border border-nebula-line hover:border-destructive/40 rounded-full px-2.5 py-1 transition-colors"
-                  >
-                    {t("delete")}
-                  </button>
-                </div>
-                <p className="text-sm font-semibold text-nebula-ink">
-                  {wish.title}
-                </p>
-                <p className="text-xs text-nebula-ink-soft mt-0.5">
-                  {wish.category?.name}
-                </p>
-                {(wish.estimated_budget || wish.target_date) && (
-                  <div className="flex items-center gap-3 mt-3 text-xs text-nebula-ink-soft">
-                    {wish.estimated_budget && (
-                      <span>₹{wish.estimated_budget}</span>
-                    )}
-                    {wish.target_date && <span>{wish.target_date}</span>}
+                  <div className="flex items-start justify-between mb-2">
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
+                      style={{
+                        color: STATUS_COLORS[wish.status],
+                        backgroundColor: `${STATUS_COLORS[wish.status]}22`,
+                      }}
+                    >
+                      {tStatus(wish.status)}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(wish);
+                      }}
+                      className="text-[10px] font-semibold text-nebula-ink-soft hover:text-destructive border border-nebula-line hover:border-destructive/40 rounded-full px-2.5 py-1 transition-colors"
+                    >
+                      {t("delete")}
+                    </button>
                   </div>
-                )}
+                  <p className="text-sm font-semibold text-nebula-ink">
+                    {wish.title}
+                  </p>
+                  <p className="text-xs text-nebula-ink-soft mt-0.5">
+                    {wish.category?.name}
+                  </p>
+                  {(wish.estimated_budget || wish.target_date) && (
+                    <div className="flex items-center gap-3 mt-3 text-xs text-nebula-ink-soft">
+                      {wish.estimated_budget && (
+                        <span>₹{wish.estimated_budget}</span>
+                      )}
+                      {wish.target_date && <span>{wish.target_date}</span>}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
