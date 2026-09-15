@@ -58,6 +58,7 @@ export default function WishDetailPage() {
 
   const [wish, setWish] = useState<Wish | null>(null);
   const [loading, setLoading] = useState(true);
+  const [memoryId, setMemoryId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -98,6 +99,16 @@ export default function WishDetailPage() {
         setProgress(w.progress_percentage || 0);
         setPriority(w.priority);
         setIsPublic(w.is_public);
+
+        api
+          .get("/memories/", { headers: authHeader() })
+          .then((memRes) => {
+            const match = memRes.data.find(
+              (m: any) => m.wish.id === wishId
+            );
+            setMemoryId(match ? match.id : null);
+          })
+          .catch(() => {});
       })
       .catch(() => router.push(`/${locale}/bucket-list`))
       .finally(() => setLoading(false));
@@ -107,6 +118,10 @@ export default function WishDetailPage() {
     const token = getAccessToken();
     if (!token) {
       router.push(`/${locale}/login`);
+      return;
+    }
+    if (!wishId || wishId === "undefined") {
+      router.push(`/${locale}/bucket-list`);
       return;
     }
     loadWish();
@@ -210,7 +225,8 @@ export default function WishDetailPage() {
           <span className="text-xs text-nebula-magenta font-semibold">
             {wish.category?.name}
           </span>
-          {wish.status !== "completed" && (
+
+          {wish.status !== "completed" ? (
             <Button
               onClick={handleMarkCompleted}
               disabled={saving}
@@ -222,6 +238,29 @@ export default function WishDetailPage() {
             >
               {t("markAsCompleted")}
             </Button>
+          ) : memoryId ? (
+            <a href={`/${locale}/memories/${memoryId}`}>
+              <Button
+                className="rounded-full px-4 py-3.5 text-xs font-bold border-0 text-[#1A0E24]"
+                style={{
+                  background: "linear-gradient(90deg, #4ADE80, var(--nebula-blue))",
+                }}
+              >
+                {t("viewMemory")}
+              </Button>
+            </a>
+          ) : (
+            <a href={`/${locale}/memories/new?wish=${wishId}`}>
+              <Button
+                className="rounded-full px-4 py-3.5 text-xs font-bold border-0 text-[#1A0E24]"
+                style={{
+                  background:
+                    "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
+                }}
+              >
+                {t("addMemory")}
+              </Button>
+            </a>
           )}
         </div>
 
@@ -306,7 +345,7 @@ export default function WishDetailPage() {
                 className="bg-white/5 border-nebula-line text-nebula-ink placeholder:text-nebula-ink-soft/60 rounded-xl focus-visible:border-nebula-magenta focus-visible:ring-nebula-magenta/30"
               />
             </div>
-           <div>
+            <div>
               <Label className="text-xs text-nebula-ink-soft mb-1.5 block">
                 {t("actualCost")}
               </Label>

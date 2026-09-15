@@ -136,7 +136,9 @@
     "deleteError": "Could not delete wish.",
     "cancel": "Cancel",
     "progressHelper": "Updates automatically once AI planning is available",
-    "actualCostHelper": "Update this as you actually spend money on this wish"
+    "actualCostHelper": "Update this as you actually spend money on this wish",
+    "viewMemory": "View Memory",
+    "addMemory": "+ Add Memory"
   },
 
   "onboarding": {
@@ -289,5 +291,42 @@
     "added": "✓ Added",
     "addedToast": "Added to your bucket list!",
     "addError": "Could not add wish. Please try again."
+  },
+
+    "memories": {
+    "title": "My Memories",
+    "subtitle": "{count} memories saved",
+    "emptyState": "No memories yet. Complete a wish to start creating memories.",
+    "emptyStateCta": "Go to Bucket List →",
+    "createTitle": "Add a memory",
+    "backToWish": "← Back to wish",
+    "backToMemories": "← Back to memories",
+    "rating": "Rating",
+    "story": "Your story",
+    "storyPlaceholder": "How did it feel? What happened?",
+    "lessonsLearned": "Lessons learned",
+    "advice": "Advice for others",
+    "makePublic": "Make this memory visible to other users",
+    "createAndAddPhotos": "Create memory & add photos",
+    "creating": "Creating...",
+    "createError": "Could not create memory. Please try again.",
+    "photos": "Photos",
+    "photoUploadError": "Could not upload photo.",
+    "photoDeleteError": "Could not delete photo.",
+    "editMemory": "Edit Memory",
+    "saveChanges": "Save changes",
+    "saving": "Saving...",
+    "saved": "Memory updated.",
+    "saveError": "Could not save changes.",
+    "visibility": "Visibility",
+    "public": "Public",
+    "private": "Private",
+    "deleteMemory": "Delete memory",
+    "deleteError": "Could not delete memory.",
+    "confirmDeleteTitle": "Delete this memory?",
+    "confirmDelete": "This cannot be undone. Your photos and story will be lost.",
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "viewFullMemory": "View full memory"
   }
 }
