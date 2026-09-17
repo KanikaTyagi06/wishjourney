@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'wish_templates',
     'django_filters',
     'wishes',
+    'memories',
 ]
 
 MIDDLEWARE = [
