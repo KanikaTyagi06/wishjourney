@@ -45,6 +45,15 @@ def request_payload(friend_request, me):
     }
 
 
+def other_user(friend_request, me):
+    """
+    The user on the other side of a request, from the point of view of `me`.
+    """
+    if friend_request.sender_id == me.id:
+        return friend_request.receiver
+    return friend_request.sender
+
+
 def build_relations(me, user_ids):
     """
     For the given user ids, work out how each one relates to `me`.
@@ -73,6 +82,11 @@ def build_relations(me, user_ids):
             relations[other_id] = ("request_received", fr.id)
 
     return relations
+
+
+# ---------------------------------------------------------------------------
+# Search
+# ---------------------------------------------------------------------------
 
 
 class UserSearchView(APIView):
@@ -111,6 +125,11 @@ class UserSearchView(APIView):
             context={"request": request, "relations": relations},
         )
         return Response(serializer.data)
+
+
+# ---------------------------------------------------------------------------
+# Send / accept / reject / cancel / remove
+# ---------------------------------------------------------------------------
 
 
 class SendFriendRequestView(APIView):
@@ -259,6 +278,40 @@ class CancelFriendRequestView(_RequestActionView):
     new_status = FriendRequest.Status.CANCELLED
 
 
+class FriendsView(APIView):
+    """
+    GET    /api/v1/social/friends/   -> list of my friends (sorted by username)
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        me = request.user
+
+        friendships = (
+            FriendRequest.objects.friends_of(me)
+            .select_related("sender__profile", "receiver__profile")
+        )
+
+        users = []
+        relations = {}
+        for friendship in friendships:
+            user = other_user(friendship, me)
+            if not user.is_active:
+                continue
+            users.append(user)
+            relations[user.id] = ("friends", friendship.id)
+
+        users.sort(key=lambda u: u.username.lower())
+
+        serializer = PublicUserSerializer(
+            users,
+            many=True,
+            context={"request": request, "relations": relations},
+        )
+        return Response(serializer.data)
+
+
 class RemoveFriendView(APIView):
     """
     DELETE /api/v1/social/friends/<user_id>/
@@ -285,3 +338,114 @@ class RemoveFriendView(APIView):
 
         friendship.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ---------------------------------------------------------------------------
+# Pending request lists + summary counts
+# ---------------------------------------------------------------------------
+
+
+class _PendingRequestListView(APIView):
+    """
+    Base for the incoming / outgoing lists. Each item looks like:
+        { "id": <request id>, "created_at": ..., "user": {public user} }
+    `user` is the person on the OTHER side of the request.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+    incoming = True  # True: requests sent to me. False: requests I sent.
+
+    def get(self, request):
+        me = request.user
+
+        if self.incoming:
+            queryset = FriendRequest.objects.filter(
+                receiver=me,
+                status=FriendRequest.Status.PENDING,
+                sender__is_active=True,
+            ).select_related("sender__profile")
+            relation_name = "request_received"
+        else:
+            queryset = FriendRequest.objects.filter(
+                sender=me,
+                status=FriendRequest.Status.PENDING,
+                receiver__is_active=True,
+            ).select_related("receiver__profile")
+            relation_name = "request_sent"
+
+        friend_requests = list(queryset)  # newest first (model ordering)
+
+        users = [other_user(fr, me) for fr in friend_requests]
+        relations = {
+            other_user(fr, me).id: (relation_name, fr.id) for fr in friend_requests
+        }
+
+        serialized_users = PublicUserSerializer(
+            users,
+            many=True,
+            context={"request": request, "relations": relations},
+        ).data
+
+        items = [
+            {
+                "id": str(fr.id),
+                "created_at": fr.created_at,
+                "user": serialized_user,
+            }
+            for fr, serialized_user in zip(friend_requests, serialized_users)
+        ]
+        return Response(items)
+
+
+class IncomingRequestsView(_PendingRequestListView):
+    """GET /api/v1/social/requests/incoming/"""
+
+    incoming = True
+
+
+class OutgoingRequestsView(_PendingRequestListView):
+    """GET /api/v1/social/requests/outgoing/"""
+
+    incoming = False
+
+
+class SocialSummaryView(APIView):
+    """
+    GET /api/v1/social/summary/
+
+    Small counts used for tab badges on /friends and the Friends counter
+    on the profile page:
+        { "friends": 3, "incoming": 1, "outgoing": 2 }
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        me = request.user
+
+        friends_count = (
+            FriendRequest.objects.friends_of(me)
+            .filter(
+                Q(sender=me, receiver__is_active=True)
+                | Q(receiver=me, sender__is_active=True)
+            )
+            .count()
+        )
+        incoming_count = FriendRequest.objects.filter(
+            receiver=me,
+            status=FriendRequest.Status.PENDING,
+            sender__is_active=True,
+        ).count()
+        outgoing_count = FriendRequest.objects.filter(
+            sender=me,
+            status=FriendRequest.Status.PENDING,
+            receiver__is_active=True,
+        ).count()
+
+        return Response(
+            {
+                "friends": friends_count,
+                "incoming": incoming_count,
+                "outgoing": outgoing_count,
+            }
+        )
