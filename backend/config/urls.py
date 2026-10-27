@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/v1/wish-templates/', include('wish_templates.urls')),
     path('api/v1/wishes/', include('wishes.urls')),
     path('api/v1/memories/', include('memories.urls')),
+    path('api/v1/social/', include('social.urls')),
 ]
 
 if settings.DEBUG:

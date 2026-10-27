@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django_filters',
     'wishes',
     'memories',
+    'social',
 ]
 
 MIDDLEWARE = [
