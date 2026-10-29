@@ -328,5 +328,24 @@
     "deleting": "Deleting...",
     "cancel": "Cancel",
     "viewFullMemory": "View full memory"
+  },
+
+    "friends": {
+    "title": "Friends",
+    "subtitle": "{count, plural, one {# friend} other {# friends}}",
+    "tabFriends": "Friends",
+    "tabRequests": "Requests",
+    "tabFind": "Find people",
+    "emptyFriends": "You have no friends here yet. Find people and share your journeys together.",
+    "emptyFriendsCta": "Find people",
+    "remove": "Remove",
+    "removing": "Removing...",
+    "removeTitle": "Remove this friend?",
+    "removeConfirm": "{name} will be removed from your friends. You can send a new request later.",
+    "removeError": "Could not remove friend. Please try again.",
+    "cancel": "Cancel",
+    "loadError": "Could not load your friends.",
+    "retry": "Try again",
+    "comingNextStep": "This section is coming in the next step."
   }
 }
