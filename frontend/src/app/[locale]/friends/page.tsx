@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getAccessToken } from "@/lib/auth";
@@ -17,6 +17,11 @@ const SOFT_BG = {
     "var(--nebula-bg)",
 };
 
+const SEARCH_MIN_LENGTH = 2;
+const SEARCH_DEBOUNCE_MS = 400;
+
+type FriendshipStatus = "none" | "friends" | "request_sent" | "request_received";
+
 interface SocialUser {
   id: string;
   username: string;
@@ -26,7 +31,7 @@ interface SocialUser {
   city: string;
   country: string;
   profile_picture: string | null;
-  friendship_status: "none" | "friends" | "request_sent" | "request_received";
+  friendship_status: FriendshipStatus;
   request_id: string | null;
 }
 
@@ -125,6 +130,16 @@ export default function FriendsPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
 
+  // Find people tab
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SocialUser[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+  const [findBusyId, setFindBusyId] = useState<string | null>(null);
+  const [findError, setFindError] = useState("");
+  const searchSeq = useRef(0);
+
   function authHeader() {
     return { Authorization: `Bearer ${getAccessToken()}` };
   }
@@ -166,6 +181,129 @@ export default function FriendsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ---- Find people: debounced search ----
+
+  async function runSearch(q: string) {
+    const seq = ++searchSeq.current;
+    setSearching(true);
+    setSearchError(false);
+    try {
+      const res = await api.get("/social/users/search/", {
+        params: { q },
+        headers: authHeader(),
+      });
+      if (seq !== searchSeq.current) return; // a newer search replaced this one
+      setResults(res.data);
+      setSearched(true);
+    } catch (err: any) {
+      if (seq !== searchSeq.current) return;
+      if (err?.response?.status === 401) {
+        router.push(`/${locale}/login`);
+        return;
+      }
+      setSearchError(true);
+    } finally {
+      if (seq === searchSeq.current) setSearching(false);
+    }
+  }
+
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < SEARCH_MIN_LENGTH) {
+      searchSeq.current++; // cancel any search still in flight
+      setResults([]);
+      setSearched(false);
+      setSearching(false);
+      setSearchError(false);
+      return;
+    }
+    setSearching(true);
+    const timer = setTimeout(() => runSearch(q), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
+
+  function updateResult(
+    userId: string,
+    status: FriendshipStatus,
+    requestId: string | null,
+  ) {
+    setResults((prev) =>
+      prev.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              friendship_status: status,
+              request_id: status === "none" ? null : requestId,
+            }
+          : u,
+      ),
+    );
+  }
+
+  async function handleFindError(err: any) {
+    if (err?.response?.status === 401) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    const code = err?.response?.data?.code;
+    if (code === "user_not_found") {
+      setFindError(t("userNotFound"));
+    } else if (
+      code === "request_not_found" ||
+      code === "request_not_pending" ||
+      code === "request_already_sent" ||
+      code === "already_friends"
+    ) {
+      setFindError(t("requestGone"));
+    } else {
+      setFindError(t("actionError"));
+    }
+    // Our view may be out of date: refresh everything.
+    await loadData(true);
+    const q = query.trim();
+    if (q.length >= SEARCH_MIN_LENGTH) runSearch(q);
+  }
+
+  async function addFriend(user: SocialUser) {
+    setFindBusyId(user.id);
+    setFindError("");
+    try {
+      const res = await api.post(
+        "/social/requests/",
+        { receiver_id: user.id },
+        { headers: authHeader() },
+      );
+      updateResult(user.id, res.data.friendship_status, res.data.id);
+      await loadData(true);
+    } catch (err: any) {
+      await handleFindError(err);
+    } finally {
+      setFindBusyId(null);
+    }
+  }
+
+  async function findRequestAction(user: SocialUser, action: RequestAction) {
+    if (!user.request_id) return;
+    setFindBusyId(user.id);
+    setFindError("");
+    try {
+      const res = await api.post(
+        `/social/requests/${user.request_id}/${action}/`,
+        {},
+        { headers: authHeader() },
+      );
+      updateResult(user.id, res.data.friendship_status, res.data.id);
+      await loadData(true);
+    } catch (err: any) {
+      await handleFindError(err);
+    } finally {
+      setFindBusyId(null);
+    }
+  }
+
+  // ---- Requests tab actions ----
+
   async function runAction(item: RequestItem, action: RequestAction) {
     setBusyId(item.id);
     setActionError("");
@@ -193,6 +331,8 @@ export default function FriendsPage() {
     }
   }
 
+  // ---- Remove friend ----
+
   async function confirmRemove() {
     if (!removeTarget) return;
     setRemoving(true);
@@ -206,6 +346,14 @@ export default function FriendsPage() {
         ...prev,
         friends: Math.max(prev.friends - 1, 0),
       }));
+      // keep the Find people results in sync too
+      setResults((prev) =>
+        prev.map((u) =>
+          u.id === removeTarget.id
+            ? { ...u, friendship_status: "none", request_id: null }
+            : u,
+        ),
+      );
       setRemoveTarget(null);
     } catch (err: any) {
       if (err?.response?.status === 401) {
@@ -239,6 +387,9 @@ export default function FriendsPage() {
     { key: "requests", label: t("tabRequests"), badge: summary.incoming },
     { key: "find", label: t("tabFind"), badge: 0 },
   ];
+
+  const trimmedQuery = query.trim();
+  const queryTooShort = trimmedQuery.length < SEARCH_MIN_LENGTH;
 
   if (loading) {
     return (
@@ -274,6 +425,7 @@ export default function FriendsPage() {
                 onClick={() => {
                   setTab(item.key);
                   setActionError("");
+                  setFindError("");
                 }}
                 className={
                   active
@@ -477,16 +629,138 @@ export default function FriendsPage() {
           </>
         )}
 
-        {/* FIND PEOPLE TAB (placeholder, built in the next step) */}
+        {/* FIND PEOPLE TAB */}
         {!loadError && tab === "find" && (
-          <div
-            className="rounded-2xl p-10 border border-nebula-line text-center"
-            style={{ background: "var(--nebula-surface-2)" }}
-          >
-            <p className="text-sm text-nebula-ink-soft">
-              {t("comingNextStep")}
-            </p>
-          </div>
+          <>
+            <div className="relative mb-5">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("findPlaceholder")}
+                autoComplete="off"
+                className="w-full bg-white/5 border border-nebula-line rounded-xl px-4 py-3 text-sm text-nebula-ink placeholder:text-nebula-ink-soft/60 outline-none focus:border-nebula-magenta transition-colors"
+              />
+              {searching && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-nebula-magenta border-t-transparent animate-spin" />
+              )}
+            </div>
+
+            {findError && (
+              <p className="text-xs text-[#FF5C6C] mb-4">{findError}</p>
+            )}
+
+            {queryTooShort ? (
+              <div
+                className="rounded-2xl p-10 border border-nebula-line text-center"
+                style={{ background: "var(--nebula-surface-2)" }}
+              >
+                <p className="text-sm text-nebula-ink-soft">{t("findHint")}</p>
+              </div>
+            ) : searchError ? (
+              <div
+                className="rounded-2xl p-10 border border-nebula-line text-center"
+                style={{ background: "var(--nebula-surface-2)" }}
+              >
+                <p className="text-sm text-[#FF5C6C] mb-3">
+                  {t("searchError")}
+                </p>
+                <button
+                  onClick={() => runSearch(trimmedQuery)}
+                  className="text-xs font-semibold px-5 py-2.5 rounded-xl border border-nebula-line text-nebula-ink hover:bg-white/5 transition-colors"
+                >
+                  {t("retry")}
+                </button>
+              </div>
+            ) : searched && !searching && results.length === 0 ? (
+              <div
+                className="rounded-2xl p-10 border border-nebula-line text-center"
+                style={{ background: "var(--nebula-surface-2)" }}
+              >
+                <p className="text-sm text-nebula-ink-soft">
+                  {t("noResults", { query: trimmedQuery })}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {results.map((user) => {
+                  const busy = findBusyId === user.id;
+                  return (
+                    <div
+                      key={user.id}
+                      className="rounded-2xl p-4 border border-nebula-line flex items-center gap-4"
+                      style={{ background: "var(--nebula-surface-2)" }}
+                    >
+                      <UserAvatar user={user} />
+                      <UserInfo user={user} />
+
+                      {user.friendship_status === "none" && (
+                        <button
+                          onClick={() => addFriend(user)}
+                          disabled={busy}
+                          className="flex-shrink-0 text-xs font-bold px-3.5 py-2 rounded-xl disabled:opacity-60"
+                          style={{
+                            background:
+                              "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
+                            color: "#1A0E24",
+                            boxShadow: "var(--nebula-glow)",
+                          }}
+                        >
+                          {busy ? t("working") : t("addFriend")}
+                        </button>
+                      )}
+
+                      {user.friendship_status === "request_sent" && (
+                        <button
+                          onClick={() => findRequestAction(user, "cancel")}
+                          disabled={busy}
+                          className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-xl border border-nebula-line text-nebula-ink-soft hover:text-[#FF5C6C] hover:border-[#FF5C6C]/50 transition-colors disabled:opacity-60"
+                        >
+                          {busy ? t("working") : t("cancelRequest")}
+                        </button>
+                      )}
+
+                      {user.friendship_status === "request_received" && (
+                        <div className="flex-shrink-0 flex flex-col gap-2">
+                          <button
+                            onClick={() => findRequestAction(user, "accept")}
+                            disabled={busy}
+                            className="text-xs font-bold px-3.5 py-2 rounded-xl disabled:opacity-60"
+                            style={{
+                              background:
+                                "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
+                              color: "#1A0E24",
+                            }}
+                          >
+                            {busy ? t("working") : t("accept")}
+                          </button>
+                          <button
+                            onClick={() => findRequestAction(user, "reject")}
+                            disabled={busy}
+                            className="text-xs font-semibold px-3.5 py-2 rounded-xl border border-nebula-line text-nebula-ink hover:bg-white/5 transition-colors disabled:opacity-60"
+                          >
+                            {t("reject")}
+                          </button>
+                        </div>
+                      )}
+
+                      {user.friendship_status === "friends" && (
+                        <span
+                          className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full"
+                          style={{
+                            color: "#4ADE80",
+                            background: "#4ADE8022",
+                          }}
+                        >
+                          ✓ {t("alreadyFriends")}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </main>
 

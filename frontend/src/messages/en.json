@@ -349,6 +349,13 @@
     "working": "Please wait...",
     "requestGone": "This request is no longer available. The list has been refreshed.",
     "actionError": "Something went wrong. Please try again.",
+    "findPlaceholder": "Search by name or username",
+    "findHint": "Type at least 2 letters to find people.",
+    "noResults": "No people found for \"{query}\".",
+    "searchError": "Could not search right now.",
+    "addFriend": "Add friend",
+    "alreadyFriends": "Friends",
+    "userNotFound": "This user could not be found.",
     "remove": "Remove",
     "removing": "Removing...",
     "removeTitle": "Remove this friend?",
@@ -356,7 +363,6 @@
     "removeError": "Could not remove friend. Please try again.",
     "cancel": "Cancel",
     "loadError": "Could not load your friends.",
-    "retry": "Try again",
-    "comingNextStep": "This section is coming in the next step."
+    "retry": "Try again"
   }
 }
