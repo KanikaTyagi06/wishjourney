@@ -30,6 +30,12 @@ interface SocialUser {
   request_id: string | null;
 }
 
+interface RequestItem {
+  id: string;
+  created_at: string;
+  user: SocialUser;
+}
+
 interface Summary {
   friends: number;
   incoming: number;
@@ -37,6 +43,62 @@ interface Summary {
 }
 
 type Tab = "friends" | "requests" | "find";
+type RequestAction = "accept" | "reject" | "cancel";
+
+function displayName(user: SocialUser) {
+  return user.full_name || `@${user.username}`;
+}
+
+function locationText(user: SocialUser) {
+  return [user.city, user.country].filter(Boolean).join(", ");
+}
+
+function UserAvatar({ user }: { user: SocialUser }) {
+  return (
+    <div
+      className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0"
+      style={{ border: "1.5px solid var(--nebula-line)" }}
+    >
+      {user.profile_picture ? (
+        <img
+          src={user.profile_picture}
+          alt=""
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <DefaultAvatar gender={user.gender} />
+      )}
+    </div>
+  );
+}
+
+function UserInfo({
+  user,
+  extra,
+}: {
+  user: SocialUser;
+  extra?: string;
+}) {
+  return (
+    <div className="flex-1 min-w-0">
+      <p className="font-heading text-sm font-bold text-nebula-ink truncate">
+        {displayName(user)}
+      </p>
+      <p className="text-xs text-nebula-ink-soft truncate">
+        @{user.username}
+        {locationText(user) ? ` · ${locationText(user)}` : ""}
+      </p>
+      {user.bio && (
+        <p className="text-xs text-nebula-ink-soft mt-1 line-clamp-1">
+          {user.bio}
+        </p>
+      )}
+      {extra && (
+        <p className="text-[11px] text-nebula-ink-soft/70 mt-1">{extra}</p>
+      )}
+    </div>
+  );
+}
 
 export default function FriendsPage() {
   const router = useRouter();
@@ -53,25 +115,36 @@ export default function FriendsPage() {
     outgoing: 0,
   });
   const [friends, setFriends] = useState<SocialUser[]>([]);
+  const [incoming, setIncoming] = useState<RequestItem[]>([]);
+  const [outgoing, setOutgoing] = useState<RequestItem[]>([]);
 
   const [removeTarget, setRemoveTarget] = useState<SocialUser | null>(null);
   const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState(false);
 
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
+
   function authHeader() {
     return { Authorization: `Bearer ${getAccessToken()}` };
   }
 
-  async function loadData() {
-    setLoading(true);
+  // silent = true refreshes data without the full-screen spinner
+  async function loadData(silent = false) {
+    if (!silent) setLoading(true);
     setLoadError(false);
     try {
-      const [summaryRes, friendsRes] = await Promise.all([
-        api.get("/social/summary/", { headers: authHeader() }),
-        api.get("/social/friends/", { headers: authHeader() }),
-      ]);
+      const [summaryRes, friendsRes, incomingRes, outgoingRes] =
+        await Promise.all([
+          api.get("/social/summary/", { headers: authHeader() }),
+          api.get("/social/friends/", { headers: authHeader() }),
+          api.get("/social/requests/incoming/", { headers: authHeader() }),
+          api.get("/social/requests/outgoing/", { headers: authHeader() }),
+        ]);
       setSummary(summaryRes.data);
       setFriends(friendsRes.data);
+      setIncoming(incomingRes.data);
+      setOutgoing(outgoingRes.data);
     } catch (err: any) {
       if (err?.response?.status === 401) {
         router.push(`/${locale}/login`);
@@ -92,6 +165,33 @@ export default function FriendsPage() {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function runAction(item: RequestItem, action: RequestAction) {
+    setBusyId(item.id);
+    setActionError("");
+    try {
+      await api.post(
+        `/social/requests/${item.id}/${action}/`,
+        {},
+        { headers: authHeader() },
+      );
+      await loadData(true);
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        router.push(`/${locale}/login`);
+        return;
+      }
+      const code = err?.response?.data?.code;
+      if (code === "request_not_found" || code === "request_not_pending") {
+        setActionError(t("requestGone"));
+        await loadData(true);
+      } else {
+        setActionError(t("actionError"));
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   async function confirmRemove() {
     if (!removeTarget) return;
@@ -123,12 +223,15 @@ export default function FriendsPage() {
     setRemoveError(false);
   }
 
-  function displayName(user: SocialUser) {
-    return user.full_name || `@${user.username}`;
-  }
-
-  function locationText(user: SocialUser) {
-    return [user.city, user.country].filter(Boolean).join(", ");
+  function formatDate(value: string) {
+    try {
+      return new Date(value).toLocaleDateString(
+        locale === "hi" ? "hi-IN" : "en-IN",
+        { day: "numeric", month: "short", year: "numeric" },
+      );
+    } catch {
+      return "";
+    }
   }
 
   const TABS: { key: Tab; label: string; badge: number }[] = [
@@ -168,7 +271,10 @@ export default function FriendsPage() {
             return (
               <button
                 key={item.key}
-                onClick={() => setTab(item.key)}
+                onClick={() => {
+                  setTab(item.key);
+                  setActionError("");
+                }}
                 className={
                   active
                     ? "rounded-full px-4 py-2 text-xs font-bold flex items-center gap-2"
@@ -205,7 +311,7 @@ export default function FriendsPage() {
           >
             <p className="text-sm text-[#FF5C6C] mb-3">{t("loadError")}</p>
             <button
-              onClick={loadData}
+              onClick={() => loadData()}
               className="text-xs font-semibold px-5 py-2.5 rounded-xl border border-nebula-line text-nebula-ink hover:bg-white/5 transition-colors"
             >
               {t("retry")}
@@ -239,36 +345,8 @@ export default function FriendsPage() {
                     className="rounded-2xl p-4 border border-nebula-line flex items-center gap-4"
                     style={{ background: "var(--nebula-surface-2)" }}
                   >
-                    <div
-                      className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0"
-                      style={{ border: "1.5px solid var(--nebula-line)" }}
-                    >
-                      {user.profile_picture ? (
-                        <img
-                          src={user.profile_picture}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <DefaultAvatar gender={user.gender} />
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p className="font-heading text-sm font-bold text-nebula-ink truncate">
-                        {displayName(user)}
-                      </p>
-                      <p className="text-xs text-nebula-ink-soft truncate">
-                        @{user.username}
-                        {locationText(user) ? ` · ${locationText(user)}` : ""}
-                      </p>
-                      {user.bio && (
-                        <p className="text-xs text-nebula-ink-soft mt-1 line-clamp-1">
-                          {user.bio}
-                        </p>
-                      )}
-                    </div>
-
+                    <UserAvatar user={user} />
+                    <UserInfo user={user} />
                     <button
                       onClick={() => setRemoveTarget(user)}
                       className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-xl border border-nebula-line text-nebula-ink-soft hover:text-[#FF5C6C] hover:border-[#FF5C6C]/50 transition-colors"
@@ -282,19 +360,124 @@ export default function FriendsPage() {
           </>
         )}
 
-        {/* REQUESTS TAB (placeholder, built in the next step) */}
+        {/* REQUESTS TAB */}
         {!loadError && tab === "requests" && (
-          <div
-            className="rounded-2xl p-10 border border-nebula-line text-center"
-            style={{ background: "var(--nebula-surface-2)" }}
-          >
-            <p className="text-sm text-nebula-ink-soft">
-              {t("comingNextStep")}
-            </p>
-          </div>
+          <>
+            {actionError && (
+              <p className="text-xs text-[#FF5C6C] mb-4">{actionError}</p>
+            )}
+
+            {incoming.length === 0 && outgoing.length === 0 ? (
+              <div
+                className="rounded-2xl p-10 border border-nebula-line text-center"
+                style={{ background: "var(--nebula-surface-2)" }}
+              >
+                <p className="text-sm text-nebula-ink-soft mb-2">
+                  {t("emptyRequests")}
+                </p>
+                <button
+                  onClick={() => setTab("find")}
+                  className="text-xs font-semibold text-nebula-magenta hover:underline"
+                >
+                  {t("emptyFriendsCta")}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* received */}
+                <section>
+                  <p className="text-xs font-semibold text-nebula-ink-soft uppercase tracking-wide mb-3">
+                    {t("receivedTitle", { count: incoming.length })}
+                  </p>
+                  {incoming.length === 0 ? (
+                    <p className="text-xs text-nebula-ink-soft">
+                      {t("emptyReceived")}
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {incoming.map((item) => (
+                        <div
+                          key={item.id}
+                          className="rounded-2xl p-4 border border-nebula-line"
+                          style={{ background: "var(--nebula-surface-2)" }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <UserAvatar user={item.user} />
+                            <UserInfo
+                              user={item.user}
+                              extra={formatDate(item.created_at)}
+                            />
+                          </div>
+                          <div className="flex gap-2 mt-4">
+                            <button
+                              onClick={() => runAction(item, "reject")}
+                              disabled={busyId === item.id}
+                              className="flex-1 rounded-xl py-2.5 text-xs font-semibold border border-nebula-line text-nebula-ink hover:bg-white/5 transition-colors disabled:opacity-60"
+                            >
+                              {t("reject")}
+                            </button>
+                            <button
+                              onClick={() => runAction(item, "accept")}
+                              disabled={busyId === item.id}
+                              className="flex-1 rounded-xl py-2.5 text-xs font-bold disabled:opacity-60"
+                              style={{
+                                background:
+                                  "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
+                                color: "#1A0E24",
+                                boxShadow: "var(--nebula-glow)",
+                              }}
+                            >
+                              {busyId === item.id ? t("working") : t("accept")}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                {/* sent */}
+                <section>
+                  <p className="text-xs font-semibold text-nebula-ink-soft uppercase tracking-wide mb-3">
+                    {t("sentTitle", { count: outgoing.length })}
+                  </p>
+                  {outgoing.length === 0 ? (
+                    <p className="text-xs text-nebula-ink-soft">
+                      {t("emptySent")}
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {outgoing.map((item) => (
+                        <div
+                          key={item.id}
+                          className="rounded-2xl p-4 border border-nebula-line flex items-center gap-4"
+                          style={{ background: "var(--nebula-surface-2)" }}
+                        >
+                          <UserAvatar user={item.user} />
+                          <UserInfo
+                            user={item.user}
+                            extra={formatDate(item.created_at)}
+                          />
+                          <button
+                            onClick={() => runAction(item, "cancel")}
+                            disabled={busyId === item.id}
+                            className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-xl border border-nebula-line text-nebula-ink-soft hover:text-[#FF5C6C] hover:border-[#FF5C6C]/50 transition-colors disabled:opacity-60"
+                          >
+                            {busyId === item.id
+                              ? t("working")
+                              : t("cancelRequest")}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </div>
+            )}
+          </>
         )}
 
-        {/* FIND PEOPLE TAB (placeholder, built in a later step) */}
+        {/* FIND PEOPLE TAB (placeholder, built in the next step) */}
         {!loadError && tab === "find" && (
           <div
             className="rounded-2xl p-10 border border-nebula-line text-center"

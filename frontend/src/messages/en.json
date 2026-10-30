@@ -330,7 +330,7 @@
     "viewFullMemory": "View full memory"
   },
 
-    "friends": {
+      "friends": {
     "title": "Friends",
     "subtitle": "{count, plural, one {# friend} other {# friends}}",
     "tabFriends": "Friends",
@@ -338,6 +338,17 @@
     "tabFind": "Find people",
     "emptyFriends": "You have no friends here yet. Find people and share your journeys together.",
     "emptyFriendsCta": "Find people",
+    "emptyRequests": "No pending requests right now.",
+    "receivedTitle": "Received ({count})",
+    "sentTitle": "Sent ({count})",
+    "emptyReceived": "No requests waiting for you.",
+    "emptySent": "You have not sent any requests.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "cancelRequest": "Cancel request",
+    "working": "Please wait...",
+    "requestGone": "This request is no longer available. The list has been refreshed.",
+    "actionError": "Something went wrong. Please try again.",
     "remove": "Remove",
     "removing": "Removing...",
     "removeTitle": "Remove this friend?",
