@@ -1,13 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getAccessToken } from "@/lib/auth";
 import { api } from "@/lib/api";
 import AppNavbar from "@/components/AppNavbar";
 import Stars from "@/components/Stars";
-import DefaultAvatar from "@/components/DefaultAvatar";
+import FriendsTab from "@/components/friends/FriendsTab";
+import FriendsSidebar from "@/components/friends/FriendsSidebar";
+import RequestsTab from "@/components/friends/RequestsTab";
+import FindTab from "@/components/friends/FindTab";
+import {
+  CARD_BG,
+  CARD_CLASS,
+  RequestAction,
+  RequestItem,
+  SocialUser,
+  Summary,
+  displayName,
+} from "@/components/friends/shared";
 
 const SOFT_BG = {
   background:
@@ -17,102 +29,7 @@ const SOFT_BG = {
     "var(--nebula-bg)",
 };
 
-const SEARCH_MIN_LENGTH = 2;
-const SEARCH_DEBOUNCE_MS = 400;
-
-type FriendshipStatus = "none" | "friends" | "request_sent" | "request_received";
-
-interface SocialUser {
-  id: string;
-  username: string;
-  full_name: string;
-  gender: string;
-  bio: string;
-  city: string;
-  country: string;
-  profile_picture: string | null;
-  friendship_status: FriendshipStatus;
-  request_id: string | null;
-}
-
-interface RequestItem {
-  id: string;
-  created_at: string;
-  user: SocialUser;
-}
-
-interface Summary {
-  friends: number;
-  incoming: number;
-  outgoing: number;
-}
-
 type Tab = "friends" | "requests" | "find";
-type RequestAction = "accept" | "reject" | "cancel";
-
-const CARD_CLASS =
-  "rounded-2xl p-4 border border-nebula-line hover:border-nebula-magenta/30 transition-colors";
-
-function displayName(user: SocialUser) {
-  return user.full_name || `@${user.username}`;
-}
-
-function locationText(user: SocialUser) {
-  return [user.city, user.country].filter(Boolean).join(", ");
-}
-
-function UserAvatar({ user }: { user: SocialUser }) {
-  return (
-    <div
-      className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0"
-      style={{ border: "1.5px solid var(--nebula-line)" }}
-    >
-      {user.profile_picture ? (
-        <img
-          src={user.profile_picture}
-          alt=""
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <DefaultAvatar gender={user.gender} />
-      )}
-    </div>
-  );
-}
-
-function UserInfo({
-  user,
-  extra,
-}: {
-  user: SocialUser;
-  extra?: string;
-}) {
-  const location = locationText(user);
-  return (
-    <div className="flex-1 min-w-0">
-      <p className="font-heading text-sm font-bold text-nebula-ink truncate">
-        {displayName(user)}
-      </p>
-      {/* show the @handle on its own line only when the name above is a real name */}
-      {user.full_name && (
-        <p className="text-xs text-nebula-ink-soft truncate">
-          @{user.username}
-        </p>
-      )}
-      {location && (
-        <p className="text-xs text-nebula-ink-soft/80 truncate">{location}</p>
-      )}
-      {user.bio && (
-        <p className="text-xs text-nebula-ink-soft mt-1 line-clamp-1">
-          {user.bio}
-        </p>
-      )}
-      {extra && (
-        <p className="text-[11px] text-nebula-ink-soft/70 mt-1">{extra}</p>
-      )}
-    </div>
-  );
-}
 
 export default function FriendsPage() {
   const router = useRouter();
@@ -131,6 +48,7 @@ export default function FriendsPage() {
   const [friends, setFriends] = useState<SocialUser[]>([]);
   const [incoming, setIncoming] = useState<RequestItem[]>([]);
   const [outgoing, setOutgoing] = useState<RequestItem[]>([]);
+  const [suggestions, setSuggestions] = useState<SocialUser[]>([]);
 
   const [removeTarget, setRemoveTarget] = useState<SocialUser | null>(null);
   const [removing, setRemoving] = useState(false);
@@ -139,36 +57,38 @@ export default function FriendsPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
 
-  // Find people tab
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SocialUser[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [searched, setSearched] = useState(false);
-  const [searchError, setSearchError] = useState(false);
-  const [findBusyId, setFindBusyId] = useState<string | null>(null);
-  const [findError, setFindError] = useState("");
-  const searchSeq = useRef(0);
+  const [addingId, setAddingId] = useState<string | null>(null);
+  const [addedIds, setAddedIds] = useState<string[]>([]);
 
   function authHeader() {
     return { Authorization: `Bearer ${getAccessToken()}` };
   }
 
-  // silent = true refreshes data without the full-screen spinner
-  async function loadData(silent = false) {
+  // silent = refresh without the full-screen spinner
+  // keepSuggestions = leave the "People you may know" card as it is
+  async function loadData(silent = false, keepSuggestions = false) {
     if (!silent) setLoading(true);
     setLoadError(false);
     try {
-      const [summaryRes, friendsRes, incomingRes, outgoingRes] =
+      const [summaryRes, friendsRes, incomingRes, outgoingRes, suggestionsRes] =
         await Promise.all([
           api.get("/social/summary/", { headers: authHeader() }),
           api.get("/social/friends/", { headers: authHeader() }),
           api.get("/social/requests/incoming/", { headers: authHeader() }),
           api.get("/social/requests/outgoing/", { headers: authHeader() }),
+          // suggestions are a nice-to-have: never break the page because of them
+          api
+            .get("/social/suggestions/", { headers: authHeader() })
+            .catch(() => ({ data: [] as SocialUser[] })),
         ]);
       setSummary(summaryRes.data);
       setFriends(friendsRes.data);
       setIncoming(incomingRes.data);
       setOutgoing(outgoingRes.data);
+      if (!keepSuggestions) {
+        setSuggestions(suggestionsRes.data);
+        setAddedIds([]);
+      }
       // tell the navbar to refresh its pending-requests badge
       if (silent) window.dispatchEvent(new Event("social-summary-changed"));
     } catch (err: any) {
@@ -192,130 +112,8 @@ export default function FriendsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ---- Find people: debounced search ----
-
-  async function runSearch(q: string) {
-    const seq = ++searchSeq.current;
-    setSearching(true);
-    setSearchError(false);
-    try {
-      const res = await api.get("/social/users/search/", {
-        params: { q },
-        headers: authHeader(),
-      });
-      if (seq !== searchSeq.current) return; // a newer search replaced this one
-      setResults(res.data);
-      setSearched(true);
-    } catch (err: any) {
-      if (seq !== searchSeq.current) return;
-      if (err?.response?.status === 401) {
-        router.push(`/${locale}/login`);
-        return;
-      }
-      setSearchError(true);
-    } finally {
-      if (seq === searchSeq.current) setSearching(false);
-    }
-  }
-
-  useEffect(() => {
-    const q = query.trim();
-    if (q.length < SEARCH_MIN_LENGTH) {
-      searchSeq.current++; // cancel any search still in flight
-      setResults([]);
-      setSearched(false);
-      setSearching(false);
-      setSearchError(false);
-      return;
-    }
-    setSearching(true);
-    const timer = setTimeout(() => runSearch(q), SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
-
-  function updateResult(
-    userId: string,
-    status: FriendshipStatus,
-    requestId: string | null,
-  ) {
-    setResults((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? {
-              ...u,
-              friendship_status: status,
-              request_id: status === "none" ? null : requestId,
-            }
-          : u,
-      ),
-    );
-  }
-
-  async function handleFindError(err: any) {
-    if (err?.response?.status === 401) {
-      router.push(`/${locale}/login`);
-      return;
-    }
-    const code = err?.response?.data?.code;
-    if (code === "user_not_found") {
-      setFindError(t("userNotFound"));
-    } else if (
-      code === "request_not_found" ||
-      code === "request_not_pending" ||
-      code === "request_already_sent" ||
-      code === "already_friends"
-    ) {
-      setFindError(t("requestGone"));
-    } else {
-      setFindError(t("actionError"));
-    }
-    // Our view may be out of date: refresh everything.
-    await loadData(true);
-    const q = query.trim();
-    if (q.length >= SEARCH_MIN_LENGTH) runSearch(q);
-  }
-
-  async function addFriend(user: SocialUser) {
-    setFindBusyId(user.id);
-    setFindError("");
-    try {
-      const res = await api.post(
-        "/social/requests/",
-        { receiver_id: user.id },
-        { headers: authHeader() },
-      );
-      updateResult(user.id, res.data.friendship_status, res.data.id);
-      await loadData(true);
-    } catch (err: any) {
-      await handleFindError(err);
-    } finally {
-      setFindBusyId(null);
-    }
-  }
-
-  async function findRequestAction(user: SocialUser, action: RequestAction) {
-    if (!user.request_id) return;
-    setFindBusyId(user.id);
-    setFindError("");
-    try {
-      const res = await api.post(
-        `/social/requests/${user.request_id}/${action}/`,
-        {},
-        { headers: authHeader() },
-      );
-      updateResult(user.id, res.data.friendship_status, res.data.id);
-      await loadData(true);
-    } catch (err: any) {
-      await handleFindError(err);
-    } finally {
-      setFindBusyId(null);
-    }
-  }
-
-  // ---- Requests tab actions ----
-
-  async function runAction(item: RequestItem, action: RequestAction) {
+  // accept / reject / cancel from the Requests tab or the sidebar
+  async function runRequestAction(item: RequestItem, action: RequestAction) {
     setBusyId(item.id);
     setActionError("");
     try {
@@ -342,7 +140,28 @@ export default function FriendsPage() {
     }
   }
 
-  // ---- Remove friend ----
+  // "Add" button in the People you may know card
+  async function addSuggestion(user: SocialUser) {
+    setAddingId(user.id);
+    try {
+      await api.post(
+        "/social/requests/",
+        { receiver_id: user.id },
+        { headers: authHeader() },
+      );
+      setAddedIds((prev) => [...prev, user.id]);
+      await loadData(true, true);
+    } catch (err: any) {
+      if (err?.response?.status === 401) {
+        router.push(`/${locale}/login`);
+        return;
+      }
+      // anything else: the list is probably out of date, so refresh it
+      await loadData(true);
+    } finally {
+      setAddingId(null);
+    }
+  }
 
   async function confirmRemove() {
     if (!removeTarget) return;
@@ -353,19 +172,8 @@ export default function FriendsPage() {
         headers: authHeader(),
       });
       setFriends((prev) => prev.filter((f) => f.id !== removeTarget.id));
-      setSummary((prev) => ({
-        ...prev,
-        friends: Math.max(prev.friends - 1, 0),
-      }));
-      // keep the Find people results in sync too
-      setResults((prev) =>
-        prev.map((u) =>
-          u.id === removeTarget.id
-            ? { ...u, friendship_status: "none", request_id: null }
-            : u,
-        ),
-      );
       setRemoveTarget(null);
+      await loadData(true);
     } catch (err: any) {
       if (err?.response?.status === 401) {
         router.push(`/${locale}/login`);
@@ -382,15 +190,9 @@ export default function FriendsPage() {
     setRemoveError(false);
   }
 
-  function formatDate(value: string) {
-    try {
-      return new Date(value).toLocaleDateString(
-        locale === "hi" ? "hi-IN" : "en-IN",
-        { day: "numeric", month: "short", year: "numeric" },
-      );
-    } catch {
-      return "";
-    }
+  function openTab(next: Tab) {
+    setTab(next);
+    setActionError("");
   }
 
   const TABS: { key: Tab; label: string; badge: number }[] = [
@@ -399,8 +201,16 @@ export default function FriendsPage() {
     { key: "find", label: t("tabFind"), badge: 0 },
   ];
 
-  const trimmedQuery = query.trim();
-  const queryTooShort = trimmedQuery.length < SEARCH_MIN_LENGTH;
+  const STATS: { label: string; value: number; target: Tab }[] = [
+    { label: t("statFriends"), value: summary.friends, target: "friends" },
+    { label: t("statRequests"), value: summary.incoming, target: "requests" },
+    { label: t("statSent"), value: summary.outgoing, target: "requests" },
+    {
+      label: t("statNearby"),
+      value: friends.filter((f) => f.same_city).length,
+      target: "friends",
+    },
+  ];
 
   if (loading) {
     return (
@@ -418,60 +228,57 @@ export default function FriendsPage() {
       <Stars count={10} className="opacity-40" />
       <AppNavbar active="friends" />
 
-      <main className="max-w-4xl mx-auto px-6 py-8 relative z-10">
-        <h1 className="font-heading text-2xl font-bold text-nebula-ink mb-1">
-          {t("title")}
-        </h1>
-        <p className="text-sm text-nebula-ink-soft mb-6">
-          {t("subtitle", { count: summary.friends })}
-        </p>
+      <main className="max-w-5xl mx-auto px-6 py-8 relative z-10">
+        {/* header + tabs */}
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+          <div>
+            <h1 className="font-heading text-2xl font-bold text-nebula-ink mb-1">
+              {t("title")}
+            </h1>
+            <p className="text-sm text-nebula-ink-soft">
+              {t("subtitle", { count: summary.friends })}
+            </p>
+          </div>
 
-        {/* tabs */}
-        <div className="flex flex-wrap gap-2 mb-7">
-          {TABS.map((item) => {
-            const active = tab === item.key;
-            return (
-              <button
-                key={item.key}
-                onClick={() => {
-                  setTab(item.key);
-                  setActionError("");
-                  setFindError("");
-                }}
-                className={
-                  active
-                    ? "rounded-full px-4 py-2 text-xs font-bold flex items-center gap-2"
-                    : "rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-2 border border-nebula-line text-nebula-ink-soft hover:text-nebula-ink hover:bg-white/5 transition-colors"
-                }
-                style={
-                  active
-                    ? { background: "var(--nebula-ink)", color: "#1A0E24" }
-                    : undefined
-                }
-              >
-                {item.label}
-                {item.badge > 0 && (
-                  <span
-                    className="min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-bold flex items-center justify-center"
-                    style={{
-                      background: "var(--nebula-magenta)",
-                      color: "#1A0E24",
-                    }}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          <div className="flex flex-wrap gap-2">
+            {TABS.map((item) => {
+              const active = tab === item.key;
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => openTab(item.key)}
+                  className={
+                    active
+                      ? "rounded-full px-4 py-2 text-xs font-bold flex items-center gap-2"
+                      : "rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-2 border border-nebula-line text-nebula-ink-soft hover:text-nebula-ink hover:bg-white/5 transition-colors"
+                  }
+                  style={
+                    active
+                      ? { background: "var(--nebula-ink)", color: "#1A0E24" }
+                      : undefined
+                  }
+                >
+                  {item.label}
+                  {item.badge > 0 && (
+                    <span
+                      className="min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-bold flex items-center justify-center"
+                      style={{
+                        background: "var(--nebula-magenta)",
+                        color: "#1A0E24",
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* load error */}
         {loadError && (
-          <div
-            className="rounded-2xl p-10 border border-nebula-line text-center"
-            style={{ background: "var(--nebula-surface-2)" }}
-          >
+          <div className={`${CARD_CLASS} p-10 text-center`} style={CARD_BG}>
             <p className="text-sm text-[#FF5C6C] mb-3">{t("loadError")}</p>
             <button
               onClick={() => loadData()}
@@ -482,296 +289,68 @@ export default function FriendsPage() {
           </div>
         )}
 
-        {/* FRIENDS TAB */}
+        {/* FRIENDS TAB: stats + map + list, with a sidebar on wide screens */}
         {!loadError && tab === "friends" && (
-          <>
-            {friends.length === 0 ? (
-              <div
-                className="rounded-2xl p-10 border border-nebula-line text-center"
-                style={{ background: "var(--nebula-surface-2)" }}
-              >
-                <p className="text-sm text-nebula-ink-soft mb-2">
-                  {t("emptyFriends")}
-                </p>
-                <button
-                  onClick={() => setTab("find")}
-                  className="text-xs font-semibold text-nebula-magenta hover:underline"
-                >
-                  {t("emptyFriendsCta")}
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {friends.map((user) => (
-                  <div
-                    key={user.id}
-                    className={`${CARD_CLASS} flex items-center gap-4`}
-                    style={{ background: "var(--nebula-surface-2)" }}
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_290px] gap-6">
+            <div className="min-w-0">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+                {STATS.map((stat) => (
+                  <button
+                    key={stat.label}
+                    type="button"
+                    onClick={() => openTab(stat.target)}
+                    className={`${CARD_CLASS} px-4 py-3.5 text-left`}
+                    style={CARD_BG}
                   >
-                    <UserAvatar user={user} />
-                    <UserInfo user={user} />
-                    <button
-                      onClick={() => setRemoveTarget(user)}
-                      className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-xl border border-nebula-line text-nebula-ink-soft hover:text-[#FF5C6C] hover:border-[#FF5C6C]/50 transition-colors"
-                    >
-                      {t("remove")}
-                    </button>
-                  </div>
+                    <b className="block font-heading text-2xl text-nebula-ink leading-tight">
+                      {stat.value}
+                    </b>
+                    <span className="text-[11px] text-nebula-ink-soft">
+                      {stat.label}
+                    </span>
+                  </button>
                 ))}
               </div>
-            )}
-          </>
+
+              <FriendsTab
+                friends={friends}
+                locale={locale}
+                onRemove={setRemoveTarget}
+                onFind={() => openTab("find")}
+              />
+            </div>
+
+            <aside className="min-w-0">
+              <FriendsSidebar
+                incoming={incoming}
+                suggestions={suggestions}
+                busyId={busyId}
+                addingId={addingId}
+                addedIds={addedIds}
+                onRequestAction={runRequestAction}
+                onAdd={addSuggestion}
+                onSeeAll={() => openTab("requests")}
+              />
+            </aside>
+          </div>
         )}
 
         {/* REQUESTS TAB */}
         {!loadError && tab === "requests" && (
-          <>
-            {actionError && (
-              <p className="text-xs text-[#FF5C6C] mb-4">{actionError}</p>
-            )}
-
-            {incoming.length === 0 && outgoing.length === 0 ? (
-              <div
-                className="rounded-2xl p-10 border border-nebula-line text-center"
-                style={{ background: "var(--nebula-surface-2)" }}
-              >
-                <p className="text-sm text-nebula-ink-soft mb-2">
-                  {t("emptyRequests")}
-                </p>
-                <button
-                  onClick={() => setTab("find")}
-                  className="text-xs font-semibold text-nebula-magenta hover:underline"
-                >
-                  {t("emptyFriendsCta")}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {/* received */}
-                <section>
-                  <p className="text-xs font-semibold text-nebula-ink-soft uppercase tracking-wide mb-3">
-                    {t("receivedTitle", { count: incoming.length })}
-                  </p>
-                  {incoming.length === 0 ? (
-                    <p className="text-xs text-nebula-ink-soft">
-                      {t("emptyReceived")}
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {incoming.map((item) => (
-                        <div
-                          key={item.id}
-                          className={CARD_CLASS}
-                          style={{ background: "var(--nebula-surface-2)" }}
-                        >
-                          <div className="flex items-center gap-4">
-                            <UserAvatar user={item.user} />
-                            <UserInfo
-                              user={item.user}
-                              extra={formatDate(item.created_at)}
-                            />
-                          </div>
-                          <div className="flex gap-2 mt-4">
-                            <button
-                              onClick={() => runAction(item, "reject")}
-                              disabled={busyId === item.id}
-                              className="flex-1 rounded-xl py-2.5 text-xs font-semibold border border-nebula-line text-nebula-ink hover:bg-white/5 transition-colors disabled:opacity-60"
-                            >
-                              {t("reject")}
-                            </button>
-                            <button
-                              onClick={() => runAction(item, "accept")}
-                              disabled={busyId === item.id}
-                              className="flex-1 rounded-xl py-2.5 text-xs font-bold disabled:opacity-60"
-                              style={{
-                                background:
-                                  "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
-                                color: "#1A0E24",
-                                boxShadow: "var(--nebula-glow)",
-                              }}
-                            >
-                              {busyId === item.id ? t("working") : t("accept")}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-
-                {/* sent */}
-                <section>
-                  <p className="text-xs font-semibold text-nebula-ink-soft uppercase tracking-wide mb-3">
-                    {t("sentTitle", { count: outgoing.length })}
-                  </p>
-                  {outgoing.length === 0 ? (
-                    <p className="text-xs text-nebula-ink-soft">
-                      {t("emptySent")}
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {outgoing.map((item) => (
-                        <div
-                          key={item.id}
-                          className={`${CARD_CLASS} flex items-center gap-4`}
-                          style={{ background: "var(--nebula-surface-2)" }}
-                        >
-                          <UserAvatar user={item.user} />
-                          <UserInfo
-                            user={item.user}
-                            extra={formatDate(item.created_at)}
-                          />
-                          <button
-                            onClick={() => runAction(item, "cancel")}
-                            disabled={busyId === item.id}
-                            className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-xl border border-nebula-line text-nebula-ink-soft hover:text-[#FF5C6C] hover:border-[#FF5C6C]/50 transition-colors disabled:opacity-60"
-                          >
-                            {busyId === item.id
-                              ? t("working")
-                              : t("cancelRequest")}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              </div>
-            )}
-          </>
+          <RequestsTab
+            incoming={incoming}
+            outgoing={outgoing}
+            busyId={busyId}
+            actionError={actionError}
+            locale={locale}
+            onAction={runRequestAction}
+            onFind={() => openTab("find")}
+          />
         )}
 
         {/* FIND PEOPLE TAB */}
         {!loadError && tab === "find" && (
-          <>
-            <div className="relative mb-5">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("findPlaceholder")}
-                autoComplete="off"
-                className="w-full bg-white/5 border border-nebula-line rounded-xl px-4 py-3 text-sm text-nebula-ink placeholder:text-nebula-ink-soft/60 outline-none focus:border-nebula-magenta transition-colors"
-              />
-              {searching && (
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-nebula-magenta border-t-transparent animate-spin" />
-              )}
-            </div>
-
-            {findError && (
-              <p className="text-xs text-[#FF5C6C] mb-4">{findError}</p>
-            )}
-
-            {queryTooShort ? (
-              <div
-                className="rounded-2xl p-10 border border-nebula-line text-center"
-                style={{ background: "var(--nebula-surface-2)" }}
-              >
-                <p className="text-sm text-nebula-ink-soft">{t("findHint")}</p>
-              </div>
-            ) : searchError ? (
-              <div
-                className="rounded-2xl p-10 border border-nebula-line text-center"
-                style={{ background: "var(--nebula-surface-2)" }}
-              >
-                <p className="text-sm text-[#FF5C6C] mb-3">
-                  {t("searchError")}
-                </p>
-                <button
-                  onClick={() => runSearch(trimmedQuery)}
-                  className="text-xs font-semibold px-5 py-2.5 rounded-xl border border-nebula-line text-nebula-ink hover:bg-white/5 transition-colors"
-                >
-                  {t("retry")}
-                </button>
-              </div>
-            ) : searched && !searching && results.length === 0 ? (
-              <div
-                className="rounded-2xl p-10 border border-nebula-line text-center"
-                style={{ background: "var(--nebula-surface-2)" }}
-              >
-                <p className="text-sm text-nebula-ink-soft">
-                  {t("noResults", { query: trimmedQuery })}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {results.map((user) => {
-                  const busy = findBusyId === user.id;
-                  return (
-                    <div
-                      key={user.id}
-                      className={`${CARD_CLASS} flex items-center gap-4`}
-                      style={{ background: "var(--nebula-surface-2)" }}
-                    >
-                      <UserAvatar user={user} />
-                      <UserInfo user={user} />
-
-                      {user.friendship_status === "none" && (
-                        <button
-                          onClick={() => addFriend(user)}
-                          disabled={busy}
-                          className="flex-shrink-0 text-xs font-bold px-3.5 py-2 rounded-xl disabled:opacity-60"
-                          style={{
-                            background:
-                              "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
-                            color: "#1A0E24",
-                            boxShadow: "var(--nebula-glow)",
-                          }}
-                        >
-                          {busy ? t("working") : t("addFriend")}
-                        </button>
-                      )}
-
-                      {user.friendship_status === "request_sent" && (
-                        <button
-                          onClick={() => findRequestAction(user, "cancel")}
-                          disabled={busy}
-                          className="flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-xl border border-nebula-line text-nebula-ink-soft hover:text-[#FF5C6C] hover:border-[#FF5C6C]/50 transition-colors disabled:opacity-60"
-                        >
-                          {busy ? t("working") : t("cancelRequest")}
-                        </button>
-                      )}
-
-                      {user.friendship_status === "request_received" && (
-                        <div className="flex-shrink-0 flex flex-col gap-2">
-                          <button
-                            onClick={() => findRequestAction(user, "accept")}
-                            disabled={busy}
-                            className="text-xs font-bold px-3.5 py-2 rounded-xl disabled:opacity-60"
-                            style={{
-                              background:
-                                "linear-gradient(90deg, var(--nebula-magenta), var(--nebula-orange))",
-                              color: "#1A0E24",
-                            }}
-                          >
-                            {busy ? t("working") : t("accept")}
-                          </button>
-                          <button
-                            onClick={() => findRequestAction(user, "reject")}
-                            disabled={busy}
-                            className="text-xs font-semibold px-3.5 py-2 rounded-xl border border-nebula-line text-nebula-ink hover:bg-white/5 transition-colors disabled:opacity-60"
-                          >
-                            {t("reject")}
-                          </button>
-                        </div>
-                      )}
-
-                      {user.friendship_status === "friends" && (
-                        <span
-                          className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full"
-                          style={{
-                            color: "#4ADE80",
-                            background: "#4ADE8022",
-                          }}
-                        >
-                          ✓ {t("alreadyFriends")}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
+          <FindTab locale={locale} onChanged={() => loadData(true)} />
         )}
       </main>
 
@@ -780,7 +359,7 @@ export default function FriendsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
           <div
             className="w-full max-w-xs rounded-2xl p-5 border border-nebula-line text-center"
-            style={{ background: "var(--nebula-surface-2)" }}
+            style={CARD_BG}
           >
             <p className="text-sm font-semibold text-nebula-ink mb-1">
               {t("removeTitle")}
