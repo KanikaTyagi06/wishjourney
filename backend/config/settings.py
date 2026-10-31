@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'wishes',
     'memories',
     'social',
+    'chat',
 ]
 
 MIDDLEWARE = [
