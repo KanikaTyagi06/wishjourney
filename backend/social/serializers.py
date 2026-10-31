@@ -9,9 +9,11 @@ class PublicUserSerializer(serializers.ModelSerializer):
     Safe, public view of a user for search results and friend lists.
     Never exposes email or any private data.
 
-    Expects an optional `relations` dict in the serializer context:
-        { user_uuid: (friendship_status, request_id) }
-    Users missing from that dict get friendship_status = "none".
+    Optional serializer context:
+        relations = { user_uuid: (friendship_status, request_id) }
+        extras    = { user_uuid: {mutual_friends, wishes_in_common,
+                                  same_city, friends_since} }
+    Users missing from either dict get safe defaults.
     """
 
     full_name = serializers.SerializerMethodField()
@@ -22,6 +24,10 @@ class PublicUserSerializer(serializers.ModelSerializer):
     profile_picture = serializers.SerializerMethodField()
     friendship_status = serializers.SerializerMethodField()
     request_id = serializers.SerializerMethodField()
+    mutual_friends = serializers.SerializerMethodField()
+    wishes_in_common = serializers.SerializerMethodField()
+    same_city = serializers.SerializerMethodField()
+    friends_since = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -36,6 +42,10 @@ class PublicUserSerializer(serializers.ModelSerializer):
             "profile_picture",
             "friendship_status",
             "request_id",
+            "mutual_friends",
+            "wishes_in_common",
+            "same_city",
+            "friends_since",
         ]
 
     def _profile(self, obj):
@@ -79,3 +89,20 @@ class PublicUserSerializer(serializers.ModelSerializer):
     def get_request_id(self, obj):
         request_id = self._relation(obj)[1]
         return str(request_id) if request_id else None
+
+    def _extra(self, obj, key, default):
+        extras = self.context.get("extras") or {}
+        return extras.get(obj.id, {}).get(key, default)
+
+    def get_mutual_friends(self, obj):
+        return self._extra(obj, "mutual_friends", 0)
+
+    def get_wishes_in_common(self, obj):
+        return self._extra(obj, "wishes_in_common", 0)
+
+    def get_same_city(self, obj):
+        return self._extra(obj, "same_city", False)
+
+    def get_friends_since(self, obj):
+        value = self._extra(obj, "friends_since", None)
+        return value.isoformat() if value else None

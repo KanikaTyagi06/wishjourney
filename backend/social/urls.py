@@ -10,12 +10,14 @@ from .views import (
     RemoveFriendView,
     SendFriendRequestView,
     SocialSummaryView,
+    SuggestionsView,
     UserSearchView,
 )
 
 urlpatterns = [
     path("users/search/", UserSearchView.as_view(), name="social_user_search"),
     path("summary/", SocialSummaryView.as_view(), name="social_summary"),
+    path("suggestions/", SuggestionsView.as_view(), name="social_suggestions"),
     path("friends/", FriendsView.as_view(), name="social_friends"),
     path(
         "friends/<uuid:user_id>/",

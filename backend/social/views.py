@@ -7,6 +7,8 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from wishes.models import UserWish
+
 from .models import FriendRequest
 from .serializers import PublicUserSerializer
 
@@ -14,6 +16,8 @@ User = get_user_model()
 
 SEARCH_MIN_LENGTH = 2
 SEARCH_MAX_RESULTS = 20
+SUGGESTION_POOL = 200
+SUGGESTION_COUNT = 5
 
 
 def error_response(detail, code, http_status):
@@ -84,6 +88,71 @@ def build_relations(me, user_ids):
     return relations
 
 
+def _city_of(user):
+    profile = getattr(user, "profile", None)
+    return (profile.city if profile else "").strip().lower()
+
+
+def build_extras(me, users, friends_since=None):
+    """
+    For the given users, work out how they relate to `me`:
+      mutual_friends   - friends we both have
+      wishes_in_common - wish templates we both added to our bucket lists
+                         (only a COUNT, never titles)
+      same_city        - same city, ignoring capitals
+      friends_since    - when the friendship started (if known)
+
+    Uses a fixed number of queries no matter how many users are listed.
+    Returns { user_uuid: {...} }.
+    """
+    user_ids = [u.id for u in users]
+    if not user_ids:
+        return {}
+
+    my_friend_ids = FriendRequest.objects.friend_ids_of(me)
+
+    # Friends of every listed user, in one query.
+    their_friends = {uid: set() for uid in user_ids}
+    rows = FriendRequest.objects.filter(
+        status=FriendRequest.Status.ACCEPTED
+    ).filter(
+        Q(sender_id__in=user_ids) | Q(receiver_id__in=user_ids)
+    ).values_list("sender_id", "receiver_id")
+    for sender_id, receiver_id in rows:
+        if sender_id in their_friends:
+            their_friends[sender_id].add(receiver_id)
+        if receiver_id in their_friends:
+            their_friends[receiver_id].add(sender_id)
+
+    # Wish templates in common, in two queries.
+    my_templates = set(
+        UserWish.objects.filter(
+            user=me, source_template__isnull=False
+        ).values_list("source_template_id", flat=True)
+    )
+    common_templates = {uid: set() for uid in user_ids}
+    if my_templates:
+        rows = UserWish.objects.filter(
+            user_id__in=user_ids, source_template_id__in=my_templates
+        ).values_list("user_id", "source_template_id")
+        for user_id, template_id in rows:
+            common_templates[user_id].add(template_id)
+
+    my_city = _city_of(me)
+    friends_since = friends_since or {}
+
+    extras = {}
+    for user in users:
+        city = _city_of(user)
+        extras[user.id] = {
+            "mutual_friends": len(their_friends[user.id] & my_friend_ids),
+            "wishes_in_common": len(common_templates[user.id]),
+            "same_city": bool(my_city) and city == my_city,
+            "friends_since": friends_since.get(user.id),
+        }
+    return extras
+
+
 # ---------------------------------------------------------------------------
 # Search
 # ---------------------------------------------------------------------------
@@ -118,11 +187,12 @@ class UserSearchView(APIView):
         )
 
         relations = build_relations(request.user, [u.id for u in users])
+        extras = build_extras(request.user, users)
 
         serializer = PublicUserSerializer(
             users,
             many=True,
-            context={"request": request, "relations": relations},
+            context={"request": request, "relations": relations, "extras": extras},
         )
         return Response(serializer.data)
 
@@ -280,7 +350,10 @@ class CancelFriendRequestView(_RequestActionView):
 
 class FriendsView(APIView):
     """
-    GET    /api/v1/social/friends/   -> list of my friends (sorted by username)
+    GET /api/v1/social/friends/   -> list of my friends (sorted by username)
+
+    Each friend also carries mutual_friends, wishes_in_common, same_city
+    and friends_since.
     """
 
     permission_classes = [permissions.IsAuthenticated]
@@ -295,19 +368,22 @@ class FriendsView(APIView):
 
         users = []
         relations = {}
+        since = {}
         for friendship in friendships:
             user = other_user(friendship, me)
             if not user.is_active:
                 continue
             users.append(user)
             relations[user.id] = ("friends", friendship.id)
+            since[user.id] = friendship.updated_at
 
         users.sort(key=lambda u: u.username.lower())
+        extras = build_extras(me, users, friends_since=since)
 
         serializer = PublicUserSerializer(
             users,
             many=True,
-            context={"request": request, "relations": relations},
+            context={"request": request, "relations": relations, "extras": extras},
         )
         return Response(serializer.data)
 
@@ -379,11 +455,12 @@ class _PendingRequestListView(APIView):
         relations = {
             other_user(fr, me).id: (relation_name, fr.id) for fr in friend_requests
         }
+        extras = build_extras(me, users)
 
         serialized_users = PublicUserSerializer(
             users,
             many=True,
-            context={"request": request, "relations": relations},
+            context={"request": request, "relations": relations, "extras": extras},
         ).data
 
         items = [
@@ -449,3 +526,62 @@ class SocialSummaryView(APIView):
                 "outgoing": outgoing_count,
             }
         )
+
+
+# ---------------------------------------------------------------------------
+# People you may know
+# ---------------------------------------------------------------------------
+
+
+class SuggestionsView(APIView):
+    """
+    GET /api/v1/social/suggestions/
+
+    Up to 5 public users the person is not yet connected to (no pending or
+    accepted request either way), ranked by:
+        mutual friends x 3  +  wishes in common x 2  +  same city x 1
+    Users with no signal at all only fill empty slots at the end.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        me = request.user
+
+        connected_ids = set()
+        rows = FriendRequest.objects.filter(
+            status__in=[FriendRequest.Status.PENDING, FriendRequest.Status.ACCEPTED]
+        ).filter(Q(sender=me) | Q(receiver=me)).values_list(
+            "sender_id", "receiver_id"
+        )
+        for sender_id, receiver_id in rows:
+            connected_ids.add(receiver_id if sender_id == me.id else sender_id)
+
+        candidates = list(
+            User.objects.filter(is_active=True, profile__is_public=True)
+            .exclude(id=me.id)
+            .exclude(id__in=connected_ids)
+            .select_related("profile")
+            .order_by("username")[:SUGGESTION_POOL]
+        )
+
+        extras = build_extras(me, candidates)
+
+        def score(user):
+            e = extras[user.id]
+            return (
+                e["mutual_friends"] * 3
+                + e["wishes_in_common"] * 2
+                + (1 if e["same_city"] else 0)
+            )
+
+        candidates.sort(key=lambda u: (-score(u), u.username.lower()))
+        picked = candidates[:SUGGESTION_COUNT]
+
+        relations = {u.id: ("none", None) for u in picked}
+        serializer = PublicUserSerializer(
+            picked,
+            many=True,
+            context={"request": request, "relations": relations, "extras": extras},
+        )
+        return Response(serializer.data)
