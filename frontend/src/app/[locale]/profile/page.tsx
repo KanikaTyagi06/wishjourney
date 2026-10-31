@@ -60,12 +60,19 @@ export default function ProfilePage() {
       .get("/wishes/", { headers: authHeader() })
       .then((res) => {
         const wishes = res.data;
-        setStats({
+        setStats((prev) => ({
+          ...prev,
           wishes: wishes.length,
           stars: wishes.filter((w: any) => w.status === "completed").length,
-          friends: 0,
-        });
+        }));
       })
+      .catch(() => {});
+
+    api
+      .get("/social/summary/", { headers: authHeader() })
+      .then((res) =>
+        setStats((prev) => ({ ...prev, friends: res.data.friends ?? 0 })),
+      )
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -189,12 +196,12 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-8 mt-6 pt-5 border-t border-nebula-line">
+          <div className="flex flex-wrap items-center gap-2 mt-6 pt-5 border-t border-nebula-line">
             <a
               href={`/${locale}/bucket-list`}
-              className="text-center hover:opacity-80 transition-opacity"
+              className="text-center rounded-xl px-5 py-2.5 hover:bg-white/5 transition-colors"
             >
-              <p className="font-heading text-lg font-bold text-nebula-ink">
+              <p className="font-heading text-lg font-bold text-nebula-ink leading-tight">
                 {stats.wishes}
               </p>
               <p className="text-[11px] text-nebula-ink-soft">
@@ -204,25 +211,24 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => setComingSoonOpen(true)}
-              className="text-center hover:opacity-80 transition-opacity"
+              className="text-center rounded-xl px-5 py-2.5 hover:bg-white/5 transition-colors"
             >
-              <p className="font-heading text-lg font-bold text-nebula-ink">
+              <p className="font-heading text-lg font-bold text-nebula-ink leading-tight">
                 {stats.stars}
               </p>
               <p className="text-[11px] text-nebula-ink-soft">{t("stars")}</p>
             </button>
-            <button
-              type="button"
-              onClick={() => setComingSoonOpen(true)}
-              className="text-center hover:opacity-80 transition-opacity"
+            <a
+              href={`/${locale}/friends`}
+              className="text-center rounded-xl px-5 py-2.5 hover:bg-white/5 transition-colors"
             >
-              <p className="font-heading text-lg font-bold text-nebula-ink">
+              <p className="font-heading text-lg font-bold text-nebula-ink leading-tight">
                 {stats.friends}
               </p>
               <p className="text-[11px] text-nebula-ink-soft">
                 {t("friends")}
               </p>
-            </button>
+            </a>
             <span
               className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full"
               style={{

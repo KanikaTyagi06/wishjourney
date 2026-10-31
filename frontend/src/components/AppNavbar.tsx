@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { logout } from "@/lib/auth";
+import { getAccessToken, logout } from "@/lib/auth";
+import { api } from "@/lib/api";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import WishJourneyMark from "@/components/WishJourneyMark";
 
@@ -17,6 +19,30 @@ export default function AppNavbar({ active }: AppNavbarProps) {
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations("dashboard");
+
+  // number of friend requests waiting for me (shown on the Friends link)
+  const [pendingRequests, setPendingRequests] = useState(0);
+
+  useEffect(() => {
+    function loadPending() {
+      const token = getAccessToken();
+      if (!token) return;
+      api
+        .get("/social/summary/", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setPendingRequests(res.data.incoming ?? 0))
+        .catch(() => {
+          // The page itself handles expired tokens; the badge just stays hidden.
+        });
+    }
+
+    loadPending();
+    // The Friends page fires this after accept/reject/cancel so the badge updates instantly.
+    window.addEventListener("social-summary-changed", loadPending);
+    return () =>
+      window.removeEventListener("social-summary-changed", loadPending);
+  }, []);
 
   function handleLogout() {
     logout();
@@ -59,11 +85,23 @@ export default function AppNavbar({ active }: AppNavbarProps) {
               href={link.href}
               className={
                 active === link.key
-                  ? "text-nebula-magenta font-semibold"
-                  : "hover:text-nebula-ink transition-colors"
+                  ? "inline-flex items-center gap-1.5 text-nebula-magenta font-semibold"
+                  : "inline-flex items-center gap-1.5 hover:text-nebula-ink transition-colors"
               }
             >
               {link.label}
+              {link.key === "friends" && pendingRequests > 0 && (
+                <span
+                  className="min-w-[17px] h-[17px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none"
+                  style={{
+                    background: "var(--nebula-magenta)",
+                    color: "#1A0E24",
+                    boxShadow: "0 0 10px -2px rgba(224, 64, 158, 0.8)",
+                  }}
+                >
+                  {pendingRequests > 9 ? "9+" : pendingRequests}
+                </span>
+              )}
             </a>
           ))}
           <a

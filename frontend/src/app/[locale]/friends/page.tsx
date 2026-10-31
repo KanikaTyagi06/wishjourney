@@ -50,6 +50,9 @@ interface Summary {
 type Tab = "friends" | "requests" | "find";
 type RequestAction = "accept" | "reject" | "cancel";
 
+const CARD_CLASS =
+  "rounded-2xl p-4 border border-nebula-line hover:border-nebula-magenta/30 transition-colors";
+
 function displayName(user: SocialUser) {
   return user.full_name || `@${user.username}`;
 }
@@ -84,15 +87,21 @@ function UserInfo({
   user: SocialUser;
   extra?: string;
 }) {
+  const location = locationText(user);
   return (
     <div className="flex-1 min-w-0">
       <p className="font-heading text-sm font-bold text-nebula-ink truncate">
         {displayName(user)}
       </p>
-      <p className="text-xs text-nebula-ink-soft truncate">
-        @{user.username}
-        {locationText(user) ? ` · ${locationText(user)}` : ""}
-      </p>
+      {/* show the @handle on its own line only when the name above is a real name */}
+      {user.full_name && (
+        <p className="text-xs text-nebula-ink-soft truncate">
+          @{user.username}
+        </p>
+      )}
+      {location && (
+        <p className="text-xs text-nebula-ink-soft/80 truncate">{location}</p>
+      )}
       {user.bio && (
         <p className="text-xs text-nebula-ink-soft mt-1 line-clamp-1">
           {user.bio}
@@ -160,6 +169,8 @@ export default function FriendsPage() {
       setFriends(friendsRes.data);
       setIncoming(incomingRes.data);
       setOutgoing(outgoingRes.data);
+      // tell the navbar to refresh its pending-requests badge
+      if (silent) window.dispatchEvent(new Event("social-summary-changed"));
     } catch (err: any) {
       if (err?.response?.status === 401) {
         router.push(`/${locale}/login`);
@@ -494,7 +505,7 @@ export default function FriendsPage() {
                 {friends.map((user) => (
                   <div
                     key={user.id}
-                    className="rounded-2xl p-4 border border-nebula-line flex items-center gap-4"
+                    className={`${CARD_CLASS} flex items-center gap-4`}
                     style={{ background: "var(--nebula-surface-2)" }}
                   >
                     <UserAvatar user={user} />
@@ -550,7 +561,7 @@ export default function FriendsPage() {
                       {incoming.map((item) => (
                         <div
                           key={item.id}
-                          className="rounded-2xl p-4 border border-nebula-line"
+                          className={CARD_CLASS}
                           style={{ background: "var(--nebula-surface-2)" }}
                         >
                           <div className="flex items-center gap-4">
@@ -602,7 +613,7 @@ export default function FriendsPage() {
                       {outgoing.map((item) => (
                         <div
                           key={item.id}
-                          className="rounded-2xl p-4 border border-nebula-line flex items-center gap-4"
+                          className={`${CARD_CLASS} flex items-center gap-4`}
                           style={{ background: "var(--nebula-surface-2)" }}
                         >
                           <UserAvatar user={item.user} />
@@ -688,7 +699,7 @@ export default function FriendsPage() {
                   return (
                     <div
                       key={user.id}
-                      className="rounded-2xl p-4 border border-nebula-line flex items-center gap-4"
+                      className={`${CARD_CLASS} flex items-center gap-4`}
                       style={{ background: "var(--nebula-surface-2)" }}
                     >
                       <UserAvatar user={user} />
