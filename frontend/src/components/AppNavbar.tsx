@@ -8,40 +8,64 @@ import { api } from "@/lib/api";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import WishJourneyMark from "@/components/WishJourneyMark";
 
-type NavKey = "home" | "explore" | "memories" | "community" | "friends";
+type NavKey = "home" | "explore" | "memories" | "community" | "friends" | "chat";
 
 interface AppNavbarProps {
   active?: NavKey;
 }
+
+const UNREAD_POLL_MS = 20000;
 
 export default function AppNavbar({ active }: AppNavbarProps) {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations("dashboard");
+  const tChat = useTranslations("chat");
 
-  // number of friend requests waiting for me (shown on the Friends link)
+  // friend requests waiting for me (badge on the Friends link)
   const [pendingRequests, setPendingRequests] = useState(0);
+  // unread chat messages (badge on the chat icon)
+  const [unreadChats, setUnreadChats] = useState(0);
 
   useEffect(() => {
+    function authHeader() {
+      return { Authorization: `Bearer ${getAccessToken()}` };
+    }
+
     function loadPending() {
-      const token = getAccessToken();
-      if (!token) return;
+      if (!getAccessToken()) return;
       api
-        .get("/social/summary/", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => setPendingRequests(res.data.incoming ?? 0))
+        .get("/social/summary/", { headers: authHeader() })
+        .then((res: any) => setPendingRequests(res.data.incoming ?? 0))
         .catch(() => {
           // The page itself handles expired tokens; the badge just stays hidden.
         });
     }
 
+    function loadUnread() {
+      if (!getAccessToken()) return;
+      api
+        .get("/chat/unread/", { headers: authHeader() })
+        .then((res: any) => setUnreadChats(res.data.unread ?? 0))
+        .catch(() => {});
+    }
+
     loadPending();
-    // The Friends page fires this after accept/reject/cancel so the badge updates instantly.
+    loadUnread();
+
+    // Pages fire these events after they change something, so badges update instantly.
     window.addEventListener("social-summary-changed", loadPending);
-    return () =>
+    window.addEventListener("chat-unread-changed", loadUnread);
+    const timer = setInterval(() => {
+      if (!document.hidden) loadUnread();
+    }, UNREAD_POLL_MS);
+
+    return () => {
       window.removeEventListener("social-summary-changed", loadPending);
+      window.removeEventListener("chat-unread-changed", loadUnread);
+      clearInterval(timer);
+    };
   }, []);
 
   function handleLogout() {
@@ -104,6 +128,44 @@ export default function AppNavbar({ active }: AppNavbarProps) {
               )}
             </a>
           ))}
+
+          {/* messages */}
+          <a
+            href={`/${locale}/chat`}
+            aria-label={tChat("navLabel")}
+            className={
+              active === "chat"
+                ? "relative w-7 h-7 rounded-full border border-nebula-magenta text-nebula-magenta flex items-center justify-center transition-colors"
+                : "relative w-7 h-7 rounded-full border border-nebula-line text-nebula-ink-soft hover:text-nebula-ink hover:border-nebula-ink-soft flex items-center justify-center transition-colors"
+            }
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            {unreadChats > 0 && (
+              <span
+                className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 rounded-full text-[9px] font-bold flex items-center justify-center leading-none"
+                style={{
+                  background: "var(--nebula-magenta)",
+                  color: "#1A0E24",
+                  boxShadow: "0 0 10px -2px rgba(224, 64, 158, 0.8)",
+                }}
+              >
+                {unreadChats > 9 ? "9+" : unreadChats}
+              </span>
+            )}
+          </a>
+
           <a
             href={`/${locale}/profile`}
             className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"

@@ -397,5 +397,33 @@
     "cancel": "Cancel",
     "loadError": "Could not load your friends.",
     "retry": "Try again"
+  },
+
+    "chat": {
+    "title": "Messages",
+    "navLabel": "Messages",
+    "searchPlaceholder": "Search chats",
+    "noChatsTitle": "No chats yet",
+    "noChatsText": "Add friends to start chatting with them.",
+    "goToFriends": "Find friends",
+    "noMatch": "No chats found for \"{query}\".",
+    "startHint": "Say hello 👋",
+    "selectChat": "Select a friend to start chatting",
+    "selectChatHint": "Your conversations appear on the left.",
+    "you": "You",
+    "typeMessage": "Type a message",
+    "send": "Send",
+    "seen": "Seen",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "emptyThread": "No messages yet. Say hello to {name}!",
+    "loadError": "Could not load this chat.",
+    "listError": "Could not load your chats.",
+    "retry": "Try again",
+    "sendError": "Could not send your message. Please try again.",
+    "messageTooLong": "Message is too long (max {max} characters).",
+    "charsLeft": "{count} characters left",
+    "notFriends": "You can only chat with your friends.",
+    "back": "Back"
   }
 }
