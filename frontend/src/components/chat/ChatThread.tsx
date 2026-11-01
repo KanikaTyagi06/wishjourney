@@ -23,6 +23,7 @@ import {
 } from "./shared";
 
 const POLL_MS = 4000;
+const MAX_BOX_HEIGHT = 120; // px, tallest the message box grows
 
 interface ChatThreadProps {
   partner: SocialUser;
@@ -161,12 +162,14 @@ export default function ChatThread({
     if (el && stickToBottom.current) el.scrollTop = el.scrollHeight;
   }, [messages, loading]);
 
-  // grow the message box with its text, up to a limit
+  // grow the message box with its text, up to a limit; a scrollbar only
+  // appears once the text is taller than that limit
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    el.style.height = `${Math.min(el.scrollHeight, MAX_BOX_HEIGHT)}px`;
+    el.style.overflowY = el.scrollHeight > MAX_BOX_HEIGHT ? "auto" : "hidden";
   }, [draft]);
 
   function handleScroll() {
@@ -359,7 +362,7 @@ export default function ChatThread({
               placeholder={t("typeMessage")}
               rows={1}
               disabled={loading || loadError}
-              className="flex-1 min-w-0 resize-none bg-white/5 border border-nebula-line rounded-2xl px-4 py-2.5 text-sm text-nebula-ink placeholder:text-nebula-ink-soft/60 outline-none focus:border-nebula-magenta transition-colors disabled:opacity-60"
+              className="flex-1 min-w-0 resize-none overflow-hidden bg-white/5 border border-nebula-line rounded-2xl px-4 py-2.5 text-sm text-nebula-ink placeholder:text-nebula-ink-soft/60 outline-none focus:border-nebula-magenta transition-colors disabled:opacity-60"
             />
             <button
               type="button"
