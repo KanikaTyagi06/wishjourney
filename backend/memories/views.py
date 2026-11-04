@@ -2,12 +2,17 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from social.models import FriendRequest
+
 from .models import Memory, MemoryPhoto
 from .serializers import (
+    CommunityMemorySerializer,
     MemorySerializer,
     MemoryCreateUpdateSerializer,
     MemoryPhotoSerializer,
 )
+
+COMMUNITY_PAGE_SIZE = 10
 
 
 class MemoryListCreateView(generics.ListCreateAPIView):
@@ -33,6 +38,59 @@ class MemoryListCreateView(generics.ListCreateAPIView):
         return Response(
             MemorySerializer(memory, context=self.get_serializer_context()).data,
             status=status.HTTP_201_CREATED,
+        )
+
+
+class CommunityFeedView(APIView):
+    """
+    GET /api/v1/memories/community/?scope=all|friends&page=1
+
+    The Community feed: memories that people chose to share (is_public) and
+    whose author also has a public profile and an active account. Newest
+    first, 10 per page. `scope=friends` keeps only memories by the viewer's
+    friends. The viewer's own public memories are included (is_me = true).
+
+        { "results": [...], "has_more": true, "page": 1 }
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        me = request.user
+
+        scope = request.query_params.get("scope", "all")
+        try:
+            page = max(int(request.query_params.get("page", 1)), 1)
+        except (TypeError, ValueError):
+            page = 1
+
+        memories = (
+            Memory.objects.filter(
+                is_public=True,
+                user__is_active=True,
+                user__profile__is_public=True,
+            )
+            .select_related("user__profile", "wish__category")
+            .prefetch_related("photos")
+            .order_by("-created_at", "-id")
+        )
+
+        friend_ids = FriendRequest.objects.friend_ids_of(me)
+        if scope == "friends":
+            memories = memories.filter(user_id__in=friend_ids)
+
+        # Fetch one extra row so we know whether another page exists.
+        start = (page - 1) * COMMUNITY_PAGE_SIZE
+        rows = list(memories[start : start + COMMUNITY_PAGE_SIZE + 1])
+        has_more = len(rows) > COMMUNITY_PAGE_SIZE
+
+        serializer = CommunityMemorySerializer(
+            rows[:COMMUNITY_PAGE_SIZE],
+            many=True,
+            context={"request": request, "friend_ids": friend_ids},
+        )
+        return Response(
+            {"results": serializer.data, "has_more": has_more, "page": page}
         )
 
 

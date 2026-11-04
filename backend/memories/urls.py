@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    CommunityFeedView,
     MemoryListCreateView,
     MemoryDetailView,
     MemoryPhotoUploadView,
@@ -9,6 +10,7 @@ from .views import (
 
 urlpatterns = [
     path("", MemoryListCreateView.as_view(), name="memory_list_create"),
+    path("community/", CommunityFeedView.as_view(), name="memory_community_feed"),
     path("<uuid:pk>/", MemoryDetailView.as_view(), name="memory_detail"),
     path(
         "<uuid:pk>/photos/",

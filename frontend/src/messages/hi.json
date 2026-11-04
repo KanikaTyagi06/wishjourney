@@ -425,5 +425,36 @@
     "charsLeft": "{count} अक्षर बाकी",
     "notFriends": "आप केवल अपने दोस्तों से चैट कर सकते हैं।",
     "back": "वापस"
+  },
+
+    "community": {
+    "title": "समुदाय",
+    "subtitle": "साथी सपने देखने वालों की साझा की हुई कहानियाँ और यादें।",
+    "tabEveryone": "सभी",
+    "tabFriends": "दोस्त",
+    "emptyAll": "अभी किसी ने कोई याद साझा नहीं की है। पहली याद आप साझा करें!",
+    "emptyAllCta": "मेरी यादों पर जाएँ",
+    "emptyFriends": "आपके किसी दोस्त ने अभी कोई याद साझा नहीं की है।",
+    "emptyFriendsCta": "दोस्त खोजें",
+    "loadError": "समुदाय फ़ीड लोड नहीं हो सकी।",
+    "retry": "फिर कोशिश करें",
+    "loadMore": "और दिखाएँ",
+    "loadingMore": "लोड हो रहा है...",
+    "readMore": "और पढ़ें",
+    "readLess": "कम दिखाएँ",
+    "lessonsLabel": "सीखे हुए सबक",
+    "adviceLabel": "दूसरों के लिए सलाह",
+    "friendTag": "दोस्त",
+    "youTag": "आप",
+    "addFriend": "दोस्त बनाएँ",
+    "requestSent": "रिक्वेस्ट भेजी गई",
+    "working": "कृपया प्रतीक्षा करें...",
+    "addError": "दोस्ती की रिक्वेस्ट नहीं भेज सके। कृपया फिर कोशिश करें।",
+    "completedOn": "{date} को पूरी हुई",
+    "ratingLabel": "5 में से {rating} स्टार",
+    "morePhotos": "+{count}",
+    "close": "बंद करें",
+    "previous": "पिछली फ़ोटो",
+    "next": "अगली फ़ोटो"
   }
 }

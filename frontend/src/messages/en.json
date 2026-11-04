@@ -425,5 +425,36 @@
     "charsLeft": "{count} characters left",
     "notFriends": "You can only chat with your friends.",
     "back": "Back"
+  },
+
+    "community": {
+    "title": "Community",
+    "subtitle": "Stories and memories shared by fellow dreamers.",
+    "tabEveryone": "Everyone",
+    "tabFriends": "Friends",
+    "emptyAll": "No shared memories yet. Be the first to share one!",
+    "emptyAllCta": "Go to my memories",
+    "emptyFriends": "None of your friends have shared a memory yet.",
+    "emptyFriendsCta": "Find friends",
+    "loadError": "Could not load the community feed.",
+    "retry": "Try again",
+    "loadMore": "Load more",
+    "loadingMore": "Loading...",
+    "readMore": "Read more",
+    "readLess": "Show less",
+    "lessonsLabel": "Lessons learned",
+    "adviceLabel": "Advice for others",
+    "friendTag": "Friend",
+    "youTag": "You",
+    "addFriend": "Add friend",
+    "requestSent": "Request sent",
+    "working": "Please wait...",
+    "addError": "Could not send the friend request. Please try again.",
+    "completedOn": "Completed {date}",
+    "ratingLabel": "{rating} out of 5 stars",
+    "morePhotos": "+{count}",
+    "close": "Close",
+    "previous": "Previous photo",
+    "next": "Next photo"
   }
 }
