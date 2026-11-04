@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'memories',
     'social',
     'chat',
+    'planner',
 ]
 
 MIDDLEWARE = [

@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/v1/memories/', include('memories.urls')),
     path('api/v1/social/', include('social.urls')),
     path('api/v1/chat/', include('chat.urls')),
+    path('api/v1/planner/', include('planner.urls')),
 ]
 
 if settings.DEBUG:
