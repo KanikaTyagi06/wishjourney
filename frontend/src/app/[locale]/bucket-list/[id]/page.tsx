@@ -55,6 +55,7 @@ export default function WishDetailPage() {
   const wishId = params.id as string;
   const t = useTranslations("wishDetail");
   const tStatus = useTranslations("wishStatus");
+  const tPlan = useTranslations("planner");
 
   const [wish, setWish] = useState<Wish | null>(null);
   const [loading, setLoading] = useState(true);
@@ -263,6 +264,30 @@ export default function WishDetailPage() {
             </a>
           )}
         </div>
+
+        {wish.status !== "completed" && (
+          <a
+            href={`/${locale}/bucket-list/${wishId}/plan`}
+            className="mt-4 flex items-center gap-3 rounded-2xl border border-nebula-line p-4 hover:border-nebula-magenta/40 transition-colors"
+            style={{ background: "var(--nebula-surface-2)" }}
+          >
+            <span
+              className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center text-lg"
+              style={{ background: "var(--nebula-magenta-soft)" }}
+            >
+              ✨
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-bold text-nebula-ink">
+                {tPlan("entryTitle")}
+              </span>
+              <span className="block text-xs text-nebula-ink-soft">
+                {tPlan("entryHint")}
+              </span>
+            </span>
+            <span className="text-nebula-ink-soft">→</span>
+          </a>
+        )}
 
         <form
           onSubmit={handleSave}
